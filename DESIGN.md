@@ -281,9 +281,12 @@ packender werden, die Texte darunter kürzer.
   läuft darauf mit und wird Bernstein, wenn die Vorhersage gerade verfehlt.
   Vor dem Jetzt ein Fächer aus fünf autoregressiven Modellen (Ordnung 8 bis
   32); das mittlere trägt den Kegel und den Schatten.
-- **Schwarm.** 400 Individuen mit Gitternachbarschaft, Schweife aus den
-  letzten neun Positionen, Hüllen nach außen gepolstert und nach Chaikin
-  gerundet, Flucht vor dem Zeiger mit Tempo.
+- **Schwarm.** Als Murmuration: bis zu 2400 Individuen (nach Fläche), je
+  14 nächste Nachbarn wie bei Staren, Angst steckt an und läuft als Welle
+  durch den Schwarm, ein leiser Wind und ein Zug zum Platz über der Mitte.
+  Ein Jäger kreist von allein, sobald zwei Sekunden niemand die Maus bewegt.
+  Nachleuchten durch halbtransparentes Übermalen statt Schweifen, Hüllen nur
+  als gestrichelte Hairline. Unter 2 ms je Bild bei 1400 Individuen.
 - **Texte.** Je Motiv ein Satz plus „Synthetisch, gerechnet lokal im Browser.“
 - **Veröffentlichungen** haben eine eigene Unterseite, nach Jahr, mit den
   Jahren als Skala in der Achsenspalte; die Startseite behält drei.
