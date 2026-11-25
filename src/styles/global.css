@@ -309,6 +309,9 @@ canvas {
 .list .mono {
   white-space: nowrap;
 }
+.list .todo {
+  justify-self: start;
+}
 @media (max-width: 480px) {
   .list > li {
     grid-template-columns: minmax(0, 1fr);
@@ -330,6 +333,7 @@ canvas {
 .refs .mono {
   display: block;
   margin-top: 0.25rem;
+  overflow-wrap: anywhere;
 }
 
 /* ---- Fuß ----------------------------------------------------------------- */

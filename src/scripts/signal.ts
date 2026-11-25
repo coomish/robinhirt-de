@@ -9,8 +9,8 @@
 const RATE = 50; // Abtastrate in Hz, unabhängig von der Bildrate
 const DT = 1 / RATE;
 const WINDOW = 120; // Fenster der Erkennung in Abtastwerten (2,4 s)
-const K = 2.5; // Breite des Toleranzbands in σ
-const MIN_SIGMA = 0.045; // Untergrenze, sonst wird das Band bei Ruhe zu eng
+const K = 3.5; // Breite des Toleranzbands in σ; bei Gauß-Rauschen selten ein Fehlalarm
+const MIN_SIGMA = 0.05; // Untergrenze, sonst wird das Band bei Ruhe zu eng
 const MAX_SECONDS = 20; // längster sichtbarer Zeitraum
 const CAP = MAX_SECONDS * RATE + 4;
 const RANGE = 1.35; // Wertebereich, der die Höhe ausfüllt
@@ -60,7 +60,7 @@ class Generator {
     this.impulse *= 0.82;
 
     let spike = 0;
-    if (r() < 1 / (RATE * 7)) {
+    if (r() < 1 / (RATE * 9)) {
       const kind = r();
       const sign = r() < 0.5 ? -1 : 1;
       if (kind < 0.45) spike = sign * (0.5 + r() * 0.6);
@@ -134,7 +134,7 @@ class Trace {
   count = 0;
   events = 0;
   last = 0;
-  private prevOut = false;
+  private calm = 1e9; // Werte seit der letzten Abweichung
 
   push(x: number, mean: number, sigma: number, out: boolean) {
     const i = this.head;
@@ -142,10 +142,10 @@ class Trace {
     this.lo[i] = mean - K * sigma;
     this.hi[i] = mean + K * sigma;
     this.out[i] = out ? 1 : 0;
-    const first = out && !this.prevOut;
+    const first = out && this.calm >= 30;
     this.first[i] = first ? 1 : 0;
     if (first) this.events++;
-    this.prevOut = out;
+    this.calm = out ? 0 : this.calm + 1;
     this.last = x;
     this.head = (i + 1) % CAP;
     if (this.count < CAP) this.count++;
@@ -215,6 +215,7 @@ export function mountSignal(canvas: HTMLCanvasElement, readout: Readout = {}) {
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
     seconds = Math.min(MAX_SECONDS, Math.max(6, W / 60));
     pxPerSample = (xNow() - 8) / (seconds * RATE);
+    if (live) while (trace.count < seconds * RATE * 0.9) tick();
   }
 
   const yOf = (v: number) => H / 2 - (v / RANGE) * (H / 2 - padY);
@@ -302,24 +303,15 @@ export function mountSignal(canvas: HTMLCanvasElement, readout: Readout = {}) {
       c.stroke();
     }
 
-    // Marken am Beginn jeder Abweichung
+    // Marke am Beginn jeder Abweichung
     c.fillStyle = colors.bernstein;
-    c.strokeStyle = colors.bernstein;
-    c.lineWidth = 1;
     for (let k = n - 1; k >= 0; k--) {
       const i = trace.at(k);
       if (!trace.first[i]) continue;
       const x = xAt(k);
       if (x > xLimit) break;
-      const y = yOf(trace.v[i]);
       c.beginPath();
-      c.moveTo(Math.round(x) + 0.5, y + 5);
-      c.lineTo(Math.round(x) + 0.5, H - 8);
-      c.globalAlpha = 0.45;
-      c.stroke();
-      c.globalAlpha = 1;
-      c.beginPath();
-      c.arc(x, y, 3.2, 0, Math.PI * 2);
+      c.arc(x, yOf(trace.v[i]), 3.2, 0, Math.PI * 2);
       c.fill();
     }
 
@@ -359,7 +351,6 @@ export function mountSignal(canvas: HTMLCanvasElement, readout: Readout = {}) {
   }
 
   // ---- Laufender Betrieb -------------------------------------------------
-  for (let k = 0; k < seconds * RATE * 0.9; k++) tick();
   let acc = 0;
   let last = 0;
   let raf = 0;

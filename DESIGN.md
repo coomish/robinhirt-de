@@ -51,9 +51,9 @@ Bernstein ist die Farbe einer Warnleuchte an der Maschine: sie taucht nur
 auf, wenn etwas vom Erwarteten abweicht. Dadurch bleibt die Seite
 zweifarbig, bis das Signal ausschlägt.
 
-Kontraste (geprüft im Build): Graphit auf Papier 16:1, Blei auf Papier
-5,5:1, Bernstein auf Papier 5,2:1, Kreide auf Schiefer 15:1, Blei hell auf
-Schiefer 6,6:1, Bernstein hell auf Schiefer 7,5:1.
+Kontraste (berechnet): Graphit auf Papier 15,3:1, Blei auf Papier 5,7:1,
+Bernstein auf Papier 5,4:1, Kreide auf Schiefer 14,5:1, Blei hell auf
+Schiefer 7,0:1, Bernstein hell auf Schiefer 7,7:1.
 
 ## Schriften
 
@@ -122,8 +122,9 @@ dem Inhalt. Das Signal läuft voll-breit, Höhe 40 vh, Berührung stört es.
   gelegentlich Sprung oder Spitze. Feste Abtastrate (50 Hz), unabhängig von
   der Bildrate.
 - Erkennung: gleitender Mittelwert und gleitende Standardabweichung über
-  die letzten 120 Abtastwerte, Toleranzband = Mittel ± 2,5 σ. Ein Wert
-  außerhalb wird im selben Moment markiert (Bernstein-Strich und Punkt).
+  die letzten 120 Abtastwerte, Toleranzband = Mittel ± 3,5 σ. Ein Wert
+  außerhalb wird im selben Moment markiert: die Spur wird dort Bernstein,
+  am Beginn jeder Abweichung sitzt ein Punkt.
 - Störung: Maus oder Finger ziehen die Spur in ihre Richtung; die Erkennung
   reagiert sichtbar, das Band weitet sich danach.
 - Ehrlicher Satz unter der Spur: „Synthetisches Signal. Die Erkennung läuft
@@ -166,3 +167,18 @@ Portfolio-Seite. Geändert:
   sitzt klein neben dem Namen, das Signal bekommt die volle Breite.
 - **Die Timeline ist die Spur.** Die Linie im Werdegang nutzt dieselbe
   Strichstärke und Farbe wie das Signal und wird beim Scrollen gezogen.
+
+## Überarbeitungsrunde (nach Screenshots Desktop/Handy, hell/dunkel)
+
+- **Herausgenommen: die Fallstriche.** Jede Abweichung hatte einen feinen
+  Bernstein-Strich von der Spur bis zur Zeitachse. Bei mehreren Ereignissen
+  wurde das ein Gitter. Jetzt bleibt nur der Punkt und die eingefärbte Spur.
+- Toleranzband von 2,5 σ auf 3,5 σ: bei 2,5 σ schlug reines Rauschen etwa
+  alle zwei Sekunden an, die Marken verloren ihre Bedeutung.
+- Beginn eines Ereignisses erst nach 30 ruhigen Werten; Sprünge zählen so
+  als ein Ereignis, nicht als zehn.
+- Handy: das Porträt stand als großer Kasten über dem Namen. Jetzt sitzt es
+  klein neben Name und Rolle, der Kernsatz läuft darunter über die volle Breite.
+- Literaturangaben: lange DOI-Links brechen jetzt um statt über den Rand zu laufen.
+- Nach einer Größenänderung füllt sich der Puffer sofort auf, damit die Spur
+  die ganze Breite nutzt.
