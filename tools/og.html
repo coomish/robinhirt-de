@@ -13,32 +13,30 @@ svg{position:absolute;left:0;top:372px}
 <div class="rolle">Gründer von prenode · Karlsruhe</div>
 <div class="satz">Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb funktionieren muss.</div>
 <svg width="1200" height="216" viewBox="0 0 1200 216" id="svg"></svg>
-<div class="fuss">Synthetische Signale, drei Kanäle · Erkennung lokal im Browser</div>
+<div class="fuss">Ein Modell lernt eine verborgene Kurve · Unsicherheit als Band · gerechnet im Browser</div>
 <script>
+// Gauß-Prozess wie in src/scripts/model.ts, hier für ein Standbild
 let a=2018;const r=()=>{a=(a+0x6d2b79f5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296};
 const g=()=>Math.sqrt(-2*Math.log(r()||1e-9))*Math.cos(2*Math.PI*r());
-const N=600,LANE=72,K=3.5;
-const specs=[
- {name:'Vibration',noise:0.07,slow:0.1,per:90,spike:[200,470],step:[],min:0.07,range:0.9},
- {name:'Temperatur',noise:0.012,slow:0.3,per:400,spike:[],step:[330],min:0.03,range:0.9},
- {name:'Strom',noise:0.035,slow:0.15,per:150,spike:[90],step:[300],min:0.05,range:1.0},
-];
-let out='';
-specs.forEach((s,c)=>{
- const v=[],win=[],lo=[],hi=[],marks=[];let step=0,drift=0;
- for(let i=0;i<N;i++){drift=drift*0.99+g()*0.004;step*=0.992;let sp=0;if(s.spike.includes(i))sp=0.6;if(s.step.includes(i))step+=0.45;
-  const x=s.slow*Math.sin(i/s.per+c)+drift+step+sp+g()*s.noise;v.push(x);
-  const n=win.length;let m=0,sg=s.min;if(n>=20){m=win.reduce((p,q)=>p+q,0)/n;const q=win.reduce((p,q)=>p+q*q,0)/n-m*m;sg=Math.max(Math.sqrt(Math.max(0,q)),s.min)}else if(n){m=win.reduce((p,q)=>p+q,0)/n}
-  lo.push(m-K*sg);hi.push(m+K*sg);if(n>=20&&Math.abs(x-m)>K*sg&&(!marks.length||i-marks[marks.length-1]>30))marks.push(i);
-  win.push(x);if(win.length>120)win.shift();}
- const y0=c*LANE,X=i=>i*1.85,Y=x=>Math.max(y0+3,Math.min(y0+LANE-3,y0+LANE/2-x/s.range*(LANE/2-8)));
- const path=arr=>arr.map((x,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(x).toFixed(1)).join(' ');
- if(c)out+=`<line x1="0" y1="${y0+0.5}" x2="1200" y2="${y0+0.5}" stroke="#d3d6d0"/>`;
- out+=`<text x="16" y="${y0+15}" font-family="JetBrains Mono" font-size="11" fill="#5b615b">${s.name}</text>`;
- out+=`<path d="${path(hi)} ${lo.map((x,i)=>'L'+X(N-1-i).toFixed(1)+' '+Y(lo[N-1-i]).toFixed(1)).join(' ')} Z" fill="rgba(26,28,26,0.06)"/>`;
- out+=`<path d="${path(v)}" fill="none" stroke="#1a1c1a" stroke-width="1.5" stroke-linejoin="round"/>`;
- out+=marks.map(i=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v[i]).toFixed(1)}" r="4.5" fill="#a3470a"/>`).join('');
- out+=`<text x="${X(N-1)+12}" y="${(Y((hi[N-1]+lo[N-1])/2)+4).toFixed(1)}" font-family="JetBrains Mono" font-size="11" fill="#5b615b">±${((hi[N-1]-lo[N-1])/2).toFixed(2)}</text>`;
-});
+const NOISE=0.09,LEN=0.11,SIG=0.5,K=3,GRID=160,RANGE=1.15,W=1200,H=216,padX=24,padY=18;
+const truth=x=>0.42*Math.sin(2*Math.PI*1.1*x+1.3)+0.22*Math.sin(2*Math.PI*2.3*x+4.1)+0.1*Math.sin(2*Math.PI*3.7*x+2.2);
+const gap=0.62;const pts=[];
+while(pts.length<56){let x=r();const d=Math.abs(x-gap);if(r()>1-0.85*Math.exp(-d*d/0.012))continue;const o=r()<0.06;pts.push({x,y:truth(x)+(o?(r()<0.5?-1:1)*(0.5+r()*0.3):g()*NOISE),out:false});}
+const k=(p,q)=>{const d=(p-q)/LEN;return SIG*Math.exp(-0.5*d*d)};
+function fit(P){const n=P.length,L=Array.from({length:n},()=>new Float64Array(n));
+ for(let i=0;i<n;i++)for(let j=0;j<=i;j++)L[i][j]=k(P[i].x,P[j].x)+(i===j?NOISE*NOISE+1e-8:0);
+ for(let i=0;i<n;i++)for(let j=0;j<=i;j++){let s=L[i][j];for(let m=0;m<j;m++)s-=L[i][m]*L[j][m];L[i][j]=i===j?Math.sqrt(s):s/L[j][j];}
+ const inv=Array.from({length:n},()=>new Float64Array(n));
+ for(let c=0;c<n;c++){const col=new Float64Array(n);for(let i=0;i<n;i++){let s=i===c?1:0;for(let m=0;m<i;m++)s-=L[i][m]*col[m];col[i]=s/L[i][i];}
+  for(let i=n-1;i>=0;i--){let s=col[i];for(let m=i+1;m<n;m++)s-=L[m][i]*col[m];col[i]=s/L[i][i];}for(let i=0;i<n;i++)inv[i][c]=col[i];}
+ const al=P.map((_,i)=>P.reduce((s,q,j)=>s+inv[i][j]*q.y,0));
+ return{al,inv,loo:P.map((_,i)=>Math.abs(al[i]/inv[i][i])/Math.sqrt(1/inv[i][i]))};}
+let m=fit(pts);pts.forEach((p,i)=>p.out=m.loo[i]>K);const used=pts.filter(p=>!p.out);m=fit(used);
+const mu=[],sd=[];for(let gi=0;gi<GRID;gi++){const x=gi/(GRID-1);const ks=used.map(p=>k(x,p.x));mu.push(ks.reduce((s,v,i)=>s+v*m.al[i],0));let v=SIG;for(let i=0;i<used.length;i++){let s=0;for(let j=0;j<used.length;j++)s+=m.inv[i][j]*ks[j];v-=ks[i]*s;}sd.push(Math.sqrt(Math.max(v,1e-9)));}
+const X=x=>padX+x*(W-2*padX),Y=v=>H/2-v/RANGE*(H/2-padY);
+const band=z=>mu.map((v,i)=>(i?'L':'M')+X(i/(GRID-1)).toFixed(1)+' '+Y(v+z*sd[i]).toFixed(1)).join(' ')+mu.map((v,i)=>{const j=GRID-1-i;return 'L'+X(j/(GRID-1)).toFixed(1)+' '+Y(mu[j]-z*sd[j]).toFixed(1)}).join(' ')+'Z';
+let out=`<path d="${band(2)}" fill="rgba(26,28,26,0.06)"/><path d="${band(1)}" fill="rgba(26,28,26,0.06)"/>`;
+out+=`<path d="${mu.map((v,i)=>(i?'L':'M')+X(i/(GRID-1)).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="#1a1c1a" stroke-width="2" stroke-linejoin="round"/>`;
+out+=pts.map(p=>`<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${p.out?4.5:3.5}" fill="${p.out?'#a3470a':'#1a1c1a'}"/>`).join('');
 document.getElementById('svg').innerHTML=out;
 </script></body></html>

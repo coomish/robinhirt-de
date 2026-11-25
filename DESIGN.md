@@ -207,3 +207,30 @@ Maschine überwacht: Vibration, Temperatur, Strom.
   „Über mich“ in der Achsenspalte, beide ohne Rahmen, ohne Rundung.
 - Tastatur: Ziffern wählen den Kanal, Leertaste und Pfeile stoßen an; ein
   Sprunglink „Zum Inhalt“ steht vor dem Kopf.
+
+## Dritte Runde: vom Sensor zum lernenden Modell
+
+Rückmeldung: der Industrie-Fokus war zu eng. Das Motiv soll KI im Allgemeinen
+zeigen: Muster, Mathematik, etwas Natur. Das Prinzip bleibt (etwas läuft live,
+ein Modell schaut zu, Besucher greifen ein), der Gegenstand wechselt.
+
+- **Was läuft.** Aus einer verborgenen, glatten Kurve fallen verrauschte
+  Punkte, gelegentlich ein Ausreißer. Die Kurve wandert langsam, alte Punkte
+  verblassen nach 26 s und verschwinden: das Modell muss weiterlernen.
+  Eine Region mit wenig Daten wandert ebenfalls, dort wird das Band breit.
+- **Das Modell.** Gauß-Prozess-Regression mit RBF-Kern (Längenskala 0,11 der
+  Breite, Rauschen σ = 0,09), Cholesky-Zerlegung, bis zu 90 Punkte, unter
+  2 ms je Fit. Das Band zeigt ±1 σ und ±2 σ der Vorhersage.
+- **Erkennung.** Leave-one-out: für jeden Punkt die Vorhersage ohne ihn
+  selbst, geschlossen aus K⁻¹. Liegt er mehr als 3 σ daneben, ist er ein
+  Ausreißer, wird Bernstein und beim zweiten Fit ausgelassen. Die Kurve
+  biegt sich also nicht zu ihm hin, zeigt ihn aber.
+- **Eingreifen.** Klick oder Finger setzt Punkte (mit Ring), Ziehen mehrere;
+  ein Messcursor zeigt Wert ± σ unter dem Zeiger. Leertaste setzt einen
+  Messpunkt, Pfeile einen Ausreißer.
+- **Der Moment beim Laden.** Die ersten Punkte kommen schnell, das Band
+  zieht sich von breit nach schmal zusammen: Lernen in zwei Sekunden.
+- Anzeige darunter: Punkte, Ausreißer, mittlere Unsicherheit, Rechenzeit.
+  Das Protokoll ist entfallen, die Fläche ist wieder ruhiger.
+- Datei: `src/scripts/model.ts`; die frühere Mehrkanal-Fassung liegt in der
+  Git-Historie (Commit „Signal: drei gekoppelte Kanäle“).

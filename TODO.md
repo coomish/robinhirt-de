@@ -40,7 +40,7 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 - Schriften: Instrument Sans und JetBrains Mono (beide SIL OFL), nur die
   Latin-Teilmengen, gebündelt in `public/fonts/` samt Lizenzen.
 - Das OG-Bild (`public/og.png`) ist aus `tools/og.html` gerendert
-  (Chrome headless, 1200×630) und zeigt die drei Kanäle. Bei Textänderung neu
+  (Chrome headless, 1200×630) und zeigt das lernende Modell mit Band. Bei Textänderung neu
   erzeugen: `python3 -m http.server 4333` im Projektordner, dann Chrome headless
   mit `--screenshot` auf `http://localhost:4333/tools/og.html`.
 - Die Fotos stammen aus dem prenode-Drive. Nutzungsrechte (Fotograf) vor

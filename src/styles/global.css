@@ -311,34 +311,6 @@ canvas {
   display: none;
 }
 
-/* ---- Protokoll unter dem Signal (Zeilen entstehen per JS) --------------- */
-
-.protokoll {
-  margin-top: 0.8rem;
-  min-height: calc(5 * 1.55em);
-}
-.protokoll li {
-  display: grid;
-  grid-template-columns: 7ch 11ch 9ch 7ch 7ch;
-  column-gap: 0.8rem;
-  line-height: 1.55;
-  white-space: nowrap;
-}
-.protokoll li :nth-child(3) {
-  color: var(--graphit);
-}
-.protokoll:empty::before {
-  content: 'Protokoll: noch keine Abweichung';
-}
-@media (max-width: 480px) {
-  .protokoll li {
-    grid-template-columns: 7ch 11ch 9ch 7ch;
-  }
-  .protokoll li :nth-child(5) {
-    display: none;
-  }
-}
-
 /* ---- Listen und Belege -------------------------------------------------- */
 
 .list > li {

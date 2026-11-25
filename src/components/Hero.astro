@@ -31,29 +31,30 @@
       data-signal
       tabindex="0"
       role="img"
-      aria-label="Drei synthetische Messkanäle (Vibration, Temperatur, Strom) mit laufender Abweichungserkennung"
+      aria-label="Ein Modell lernt live eine verborgene Kurve aus verrauschten Punkten und zeigt seine Unsicherheit als Band"
       aria-describedby="signal-hilfe"
     ></canvas>
     <p id="signal-hilfe" class="visually-hidden">
-      Mit Maus oder Finger lässt sich jeder Kanal stören. Tastatur: Ziffern 1 bis 3 wählen den
-      Kanal, Leertaste oder Pfeil nach oben stoßen ihn an, Pfeil nach unten nach unten.
+      Klick oder Finger setzt eigene Punkte, Ziehen setzt mehrere. Tastatur: Leertaste fügt
+      einen Messpunkt hinzu, Pfeil nach oben oder unten einen Ausreißer.
     </p>
   </div>
 
   <div class="row readout">
-    <div class="axis"><p class="mono">Signal</p></div>
+    <div class="axis"><p class="mono">Modell</p></div>
     <div class="content">
       <p class="mono werte">
-        <span>Vibration <b data-ro="v0">–</b></span>
-        <span>Temperatur <b data-ro="v1">–</b></span>
-        <span>Strom <b data-ro="v2">–</b></span>
-        <span>Abweichungen <b data-ro="events">0</b></span>
+        <span>Punkte <b data-ro="points">0</b></span>
+        <span>Ausreißer <b data-ro="outliers">0</b></span>
+        <span>Unsicherheit <b data-ro="uncertainty">–</b></span>
+        <span>Rechenzeit <b data-ro="time">–</b></span>
       </p>
-      <ol class="mono protokoll" data-ro="log" aria-label="Protokoll der letzten Abweichungen"></ol>
       <p class="hinweis">
-        Synthetische Signale mit Rauschen, Drift und Ausreißern, die Kanäle sind gekoppelt. Die
-        Erkennung, ein gleitender Mittelwert mit Toleranzband je Kanal, läuft lokal im Browser.
-        Maus oder Finger stören einen Kanal; die anderen reagieren mit Verzögerung.
+        Die Punkte stammen aus einer verborgenen Kurve, verrauscht und mit gelegentlichen
+        Ausreißern. Ein Gauß-Prozess lernt die Kurve und zeigt seine Unsicherheit als Band,
+        breit, wo Daten fehlen. Ausreißer erkennt er daran, dass sie ohne sich selbst nicht
+        vorhersagbar wären. Alles rechnet lokal im Browser. Klick oder Finger setzt eigene
+        Punkte.
       </p>
     </div>
   </div>
@@ -99,7 +100,7 @@
   }
   canvas {
     width: 100%;
-    height: clamp(330px, 52vh, 560px);
+    height: clamp(260px, 44vh, 460px);
     touch-action: pan-y;
     cursor: crosshair;
   }
@@ -119,7 +120,7 @@
     font-weight: 500;
     color: var(--graphit);
     display: inline-block;
-    min-width: 5.2ch;
+    min-width: 3ch;
   }
   .hinweis {
     margin-top: 0.9rem;
@@ -148,20 +149,21 @@
 </style>
 
 <script>
-  import { mountSignal } from '../scripts/signal';
+  import { mountModel } from '../scripts/model';
   const canvas = document.querySelector<HTMLCanvasElement>('[data-signal]');
   const ro = (n: string) => document.querySelector<HTMLElement>(`[data-ro="${n}"]`);
   if (canvas) {
-    mountSignal(canvas, {
-      values: [ro('v0'), ro('v1'), ro('v2')],
-      events: ro('events'),
-      log: ro('log'),
+    mountModel(canvas, {
+      points: ro('points'),
+      outliers: ro('outliers'),
+      uncertainty: ro('uncertainty'),
+      time: ro('time'),
     });
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const h = document.querySelector('.hinweis');
       if (h)
         h.textContent =
-          'Synthetische Signale als Standbild, da reduzierte Bewegung eingestellt ist. Die Erkennung, ein gleitender Mittelwert mit Toleranzband je Kanal, lief lokal im Browser.';
+          'Standbild, da reduzierte Bewegung eingestellt ist: Ein Gauß-Prozess hat aus verrauschten Punkten einer verborgenen Kurve gelernt und zeigt seine Unsicherheit als Band, Ausreißer in Bernstein. Gerechnet lokal im Browser.';
     }
   }
 </script>
