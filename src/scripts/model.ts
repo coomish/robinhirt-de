@@ -8,6 +8,8 @@
  * Alles lokal im Browser, keine Daten verlassen die Seite.
  */
 
+import { gauss, hint, mulberry32, readColors, readout, runLoop, setupCanvas, fmt, MONO, type Colors, type Rng, type UI } from './ui';
+
 const MAX_POINTS = 90;
 const MAX_AGE = 26; // Sekunden, bis ein Punkt verschwindet
 const NOISE = 0.09; // σ des Messrauschens
@@ -16,26 +18,6 @@ const SIGNAL = 0.5; // Signalvarianz des Kerns
 const GRID = 160; // Stützstellen der Vorhersage
 const OUTLIER_Z = 3; // Ausreißer ab so vielen σ (Leave-one-out)
 
-type Rng = () => number;
-
-function mulberry32(seed: number): Rng {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function gauss(rng: Rng): number {
-  let u = 0;
-  let v = 0;
-  while (u === 0) u = rng();
-  while (v === 0) v = rng();
-  return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * v);
-}
 
 export interface Point {
   x: number; // 0..1
@@ -173,45 +155,29 @@ class GP {
   }
 }
 
-interface Colors {
-  graphit: string;
-  blei: string;
-  raster: string;
-  bernstein: string;
-  band: string;
-  papier: string;
-}
 
-function readColors(el: HTMLElement): Colors {
-  const cs = getComputedStyle(el);
-  const get = (n: string) => cs.getPropertyValue(n).trim();
-  return {
-    graphit: get('--graphit'),
-    blei: get('--blei'),
-    raster: get('--raster'),
-    bernstein: get('--bernstein'),
-    band: get('--band'),
-    papier: get('--papier'),
-  };
-}
-
-export interface Readout {
-  points?: HTMLElement | null;
-  outliers?: HTMLElement | null;
-  uncertainty?: HTMLElement | null;
-  time?: HTMLElement | null;
-}
-
-const fmt = (x: number) => (x >= 0 ? '+' : '−') + Math.abs(x).toFixed(2);
-const MONO = '500 11px "JetBrains Mono", ui-monospace, monospace';
 const RANGE = 1.15; // Wertebereich, der die Höhe füllt
 
-export function mountModel(canvas: HTMLCanvasElement, readout: Readout = {}) {
+export const HINWEIS_MODELL =
+  'Die Punkte stammen aus einer verborgenen Kurve, verrauscht und mit gelegentlichen Ausreißern. Ein Gauß-Prozess lernt die Kurve und zeigt seine Unsicherheit als Band, breit, wo Daten fehlen. Ausreißer erkennt er daran, dass sie ohne sich selbst nicht vorhersagbar wären. Alles rechnet lokal im Browser. Klick oder Finger setzt eigene Punkte.';
+
+export function mountModel(canvas: HTMLCanvasElement, ui: UI = {}) {
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const live = !reduced.matches;
   const rng: Rng = live ? Math.random : mulberry32(2018);
+  const set = readout(ui, ['Punkte', 'Ausreißer', 'Unsicherheit', 'Rechenzeit']);
+  hint(
+    ui,
+    live
+      ? HINWEIS_MODELL
+      : 'Standbild, da reduzierte Bewegung eingestellt ist: Ein Gauß-Prozess hat aus verrauschten Punkten einer verborgenen Kurve gelernt und zeigt seine Unsicherheit als Band, Ausreißer in Bernstein. Gerechnet lokal im Browser.',
+  );
+  canvas.setAttribute(
+    'aria-label',
+    'Ein Modell lernt live eine verborgene Kurve aus verrauschten Punkten und zeigt seine Unsicherheit als Band',
+  );
 
   const truth = new Truth(rng);
   const gp = new GP();
@@ -224,18 +190,11 @@ export function mountModel(canvas: HTMLCanvasElement, readout: Readout = {}) {
 
   let W = 0;
   let H = 0;
-  let dpr = 1;
   const padX = 24;
   const padY = 22;
 
   function resize() {
-    const rect = canvas.getBoundingClientRect();
-    W = Math.max(1, Math.round(rect.width));
-    H = Math.max(1, Math.round(rect.height));
-    dpr = Math.min(2, window.devicePixelRatio || 1);
-    canvas.width = Math.round(W * dpr);
-    canvas.height = Math.round(H * dpr);
-    ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ({ W, H } = setupCanvas(canvas, ctx!));
   }
   const xOf = (x: number) => padX + x * (W - 2 * padX);
   const yOf = (v: number) => H / 2 - (v / RANGE) * (H / 2 - padY);
@@ -392,14 +351,9 @@ export function mountModel(canvas: HTMLCanvasElement, readout: Readout = {}) {
   function updateReadout(now: number, force = false) {
     if (!force && now - lastReadout < 150) return;
     lastReadout = now;
-    if (readout.points) readout.points.textContent = String(pts.length);
-    if (readout.outliers) readout.outliers.textContent = String(outliers);
-    if (readout.uncertainty) {
-      let s = 0;
-      for (let g = 0; g < GRID; g++) s += gp.sd[g];
-      readout.uncertainty.textContent = '±' + (s / GRID).toFixed(2);
-    }
-    if (readout.time) readout.time.textContent = fitMs.toFixed(1) + ' ms';
+    let s = 0;
+    for (let g = 0; g < GRID; g++) s += gp.sd[g];
+    set([String(pts.length), String(outliers), '±' + (s / GRID).toFixed(2), fitMs.toFixed(1) + ' ms']);
   }
 
   // ---- Standbild bei reduzierter Bewegung ----------------------------------
@@ -420,19 +374,11 @@ export function mountModel(canvas: HTMLCanvasElement, readout: Readout = {}) {
   }
 
   // ---- Laufender Betrieb ---------------------------------------------------
-  let last = 0;
-  let raf = 0;
-  let visible = true;
-  let running = false;
   let nextObs = 0;
   let nextFit = 0;
   const start0 = performance.now();
 
-  function frame(now: number) {
-    raf = requestAnimationFrame(frame);
-    if (!last) last = now;
-    const dt = Math.min(0.1, (now - last) / 1000);
-    last = now;
+  function frame(dt: number, now: number) {
     t += dt;
     // Der Moment beim Laden: die ersten Punkte kommen schnell, dann ruhig
     const since = (now - start0) / 1000;
@@ -448,50 +394,21 @@ export function mountModel(canvas: HTMLCanvasElement, readout: Readout = {}) {
       refit();
       nextFit = now + 60;
     }
-    draw();
     updateReadout(now);
   }
 
-  function start() {
-    if (running || !visible || document.hidden) return;
-    running = true;
-    last = 0;
-    raf = requestAnimationFrame(frame);
-  }
-  function stop() {
-    if (!running) return;
-    running = false;
-    cancelAnimationFrame(raf);
-  }
-  start();
-
-  new IntersectionObserver(
-    (entries) => {
-      visible = entries.some((e) => e.isIntersecting);
-      if (visible) start();
-      else stop();
+  runLoop(
+    canvas,
+    {
+      frame,
+      draw: () => draw(),
+      resize,
+      recolor: () => {
+        colors = readColors(canvas);
+      },
     },
-    { threshold: 0.05 },
-  ).observe(canvas);
-  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-  new ResizeObserver(() => {
-    resize();
-    if (!running) {
-      draw();
-      updateReadout(performance.now(), true);
-    }
-  }).observe(canvas);
-  const recolor = () => {
-    colors = readColors(canvas);
-    if (!running) draw();
-  };
-  new MutationObserver(recolor).observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme'],
-  });
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', recolor);
-  reduced.addEventListener('change', () => (reduced.matches ? stop() : start()));
-  if (document.fonts?.load) document.fonts.load(MONO).catch(() => undefined);
+    reduced,
+  );
 
   // ---- Eingreifen: Zeiger, Finger, Tastatur -----------------------------
   const local = (ev: PointerEvent) => {

@@ -234,3 +234,30 @@ ein Modell schaut zu, Besucher greifen ein), der Gegenstand wechselt.
   Das Protokoll ist entfallen, die Fläche ist wieder ruhiger.
 - Datei: `src/scripts/model.ts`; die frühere Mehrkanal-Fassung liegt in der
   Git-Historie (Commit „Signal: drei gekoppelte Kanäle“).
+
+## Vergleich: drei Motive zur Auswahl
+
+Neben dem lernenden Modell sind die beiden anderen Konzepte gebaut, damit die
+Wahl am echten Kopf fällt. Umschalten per Adresse, die Startseite bleibt sonst
+unverändert:
+
+- `/` – Lernendes Modell (`src/scripts/model.ts`)
+- `/?motiv=vorhersage` – Vorhersage gegen Wirklichkeit (`src/scripts/forecast.ts`):
+  Lorenz-System als Spur (zeitlich so gestreckt, dass eine Schwingung etwa
+  drei Sekunden dauert), autoregressives Modell 16. Ordnung, laufend per
+  kleinster Quadrate aus den letzten sechs Sekunden angepasst, Vorhersage
+  0,5 s. Gestrichelt: was für diesen Moment vorhergesagt war. Bernstein: die
+  Lücke, wo die Wirklichkeit mehr als 0,12 daneben liegt. Der Kegel vor dem
+  Jetzt ist der gemessene mittlere Fehler je Horizontschritt (±2). Maus oder
+  Finger ziehen den Zustand, Klick stößt an.
+- `/?motiv=schwarm` – Ordnung im Schwarm (`src/scripts/swarm.ts`): 260
+  Individuen nach drei Regeln, k-means für k = 1…5 mit Warmstart je Bild,
+  k gewählt, solange eine weitere Gruppe die Trägheit noch um 38 % senkt,
+  mit Hysterese gegen Flackern. Hülle je Gruppe (Andrew), Außenseiter ab 2,2
+  Streuungen vom Gruppenmittel. Maus oder Finger verscheuchen.
+- `/motive` – unverlinkte Entwurfsseite mit allen dreien untereinander,
+  `noindex`; vor der Veröffentlichung löschen.
+
+Alle drei teilen `src/scripts/ui.ts` (Schleife mit Pause, Anzeige, Farben)
+und dieselbe Sprache: Papier, Graphit, Band, Bernstein nur für das, was
+nicht passt.

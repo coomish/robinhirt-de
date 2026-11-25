@@ -46,6 +46,13 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 - Die Fotos stammen aus dem prenode-Drive. Nutzungsrechte (Fotograf) vor
   Veröffentlichung prüfen.
 
+## Vor der Veröffentlichung
+
+- [ ] Motiv wählen (siehe DESIGN.md, „Vergleich“), dann `src/pages/motive.astro`
+      löschen, den `?motiv=`-Umschalter in `src/components/Hero.astro` entfernen
+      und die beiden nicht gewählten Module aus `src/scripts/` nehmen.
+- [ ] OG-Bild zum gewählten Motiv rendern (`tools/og.html` zeigt das lernende Modell).
+
 ## Technisch
 
 - [ ] `astro check` läuft in dieser Umgebung nicht durch (fragt nach einer

@@ -43,13 +43,13 @@
   <div class="row readout">
     <div class="axis"><p class="mono">Modell</p></div>
     <div class="content">
-      <p class="mono werte">
-        <span>Punkte <b data-ro="points">0</b></span>
-        <span>Ausreißer <b data-ro="outliers">0</b></span>
-        <span>Unsicherheit <b data-ro="uncertainty">–</b></span>
-        <span>Rechenzeit <b data-ro="time">–</b></span>
+      <p class="mono werte" data-ro="werte">
+        <span>Punkte <b>–</b></span>
+        <span>Ausreißer <b>–</b></span>
+        <span>Unsicherheit <b>–</b></span>
+        <span>Rechenzeit <b>–</b></span>
       </p>
-      <p class="hinweis">
+      <p class="hinweis" data-ro="hinweis">
         Die Punkte stammen aus einer verborgenen Kurve, verrauscht und mit gelegentlichen
         Ausreißern. Ein Gauß-Prozess lernt die Kurve und zeigt seine Unsicherheit als Band,
         breit, wo Daten fehlen. Ausreißer erkennt er daran, dass sie ohne sich selbst nicht
@@ -151,19 +151,15 @@
 <script>
   import { mountModel } from '../scripts/model';
   const canvas = document.querySelector<HTMLCanvasElement>('[data-signal]');
-  const ro = (n: string) => document.querySelector<HTMLElement>(`[data-ro="${n}"]`);
+  const ui = {
+    werte: document.querySelector<HTMLElement>('[data-ro="werte"]'),
+    hinweis: document.querySelector<HTMLElement>('[data-ro="hinweis"]'),
+  };
   if (canvas) {
-    mountModel(canvas, {
-      points: ro('points'),
-      outliers: ro('outliers'),
-      uncertainty: ro('uncertainty'),
-      time: ro('time'),
-    });
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const h = document.querySelector('.hinweis');
-      if (h)
-        h.textContent =
-          'Standbild, da reduzierte Bewegung eingestellt ist: Ein Gauß-Prozess hat aus verrauschten Punkten einer verborgenen Kurve gelernt und zeigt seine Unsicherheit als Band, Ausreißer in Bernstein. Gerechnet lokal im Browser.';
-    }
+    // Vergleich der Motive: ?motiv=vorhersage oder ?motiv=schwarm, sonst das Modell
+    const motiv = new URLSearchParams(location.search).get('motiv');
+    if (motiv === 'vorhersage') import('../scripts/forecast').then((m) => m.mountForecast(canvas, ui));
+    else if (motiv === 'schwarm') import('../scripts/swarm').then((m) => m.mountSwarm(canvas, ui));
+    else mountModel(canvas, ui);
   }
 </script>

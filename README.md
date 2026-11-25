@@ -12,5 +12,7 @@ npm run preview    # dient dist/ lokal
 - `DESIGN.md` – Gestaltungsplan und Begründungen
 - `TODO.md` – offene Inhalte und getroffene Annahmen
 - `src/scripts/model.ts` – das lernende Modell im Kopf (Gauß-Prozess, Ausreißer, Zeichnen)
+- `src/scripts/forecast.ts`, `src/scripts/swarm.ts` – die beiden Alternativen, im Kopf per `/?motiv=vorhersage` bzw. `/?motiv=schwarm`, Vergleich unter `/motive`
+- `src/scripts/ui.ts` – Gemeinsames: Schleife, Anzeige, Farben
 - `src/scripts/timeline.ts` – die beim Scrollen gezogene Achse im Werdegang
 - `tools/og.html` – Vorlage für das Open-Graph-Bild
