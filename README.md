@@ -2,6 +2,11 @@
 
 Persönliche Website, eine statische Seite. Astro 5, TypeScript, keine Laufzeit-Abhängigkeiten im Browser.
 
+Live: https://coomish.github.io/robinhirt-de/ (GitHub Pages). Jeder Push auf `main`
+baut und veröffentlicht über `.github/workflows/pages.yml`; `SITE` und `BASE`
+kommen dabei aus GitHub Pages. Mit eigener Domain später `site` in
+`astro.config.mjs` setzen und in den Pages-Einstellungen die Domain eintragen.
+
 ```bash
 npm install
 npm run dev        # http://localhost:4321

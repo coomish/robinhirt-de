@@ -4,8 +4,16 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 
 ## Inhalte, die fehlen
 
-- [ ] Domain eintragen: `site` in `astro.config.mjs` (steht auf `https://example.invalid`).
-      Davon hängen Canonical-Link, Open-Graph-URL und das OG-Bild ab.
+- [ ] Domain eintragen: in den GitHub-Pages-Einstellungen (Custom domain) und als
+      `site` in `astro.config.mjs`. Bis dahin liegt die Seite unter
+      https://coomish.github.io/robinhirt-de/ und bekommt Adresse und Basis-Pfad
+      automatisch vom Workflow.
+- [ ] Unterseiten ohne Schrägstrich am Ende (`/impressum`) leiten auf GitHub Pages
+      per 301 auf `/impressum/` um. Harmlos; falls störend, `trailingSlash: 'always'`
+      setzen und die Links anpassen.
+- [ ] Das alte Repository `coomish.github.io` (Seite von 2017) ist unberührt. Soll die
+      neue Seite direkt unter coomish.github.io liegen, dort den Inhalt ersetzen oder
+      gleich die eigene Domain nutzen.
 - [ ] E-Mail-Adresse im Abschnitt Kontakt (`src/pages/index.astro`).
 - [x] Kopf: `public/buehne-1536.jpg` (sitzend, Schwarzweiß) als Bühne.
 - [x] „Über mich“: `public/ueber-1536.jpg` (Profil, Blick nach rechts) als Bühne.
