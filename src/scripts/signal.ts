@@ -327,8 +327,8 @@ export function mountSignal(canvas: HTMLCanvasElement, readout: Readout = {}) {
 
   // ---- Anzeige ---------------------------------------------------------
   let lastReadout = 0;
-  function updateReadout(now: number) {
-    if (now - lastReadout < 120) return;
+  function updateReadout(now: number, force = false) {
+    if (!force && now - lastReadout < 120) return;
     lastReadout = now;
     if (readout.value) readout.value.textContent = fmt(trace.last);
     if (readout.mean) readout.mean.textContent = fmt(det.mean);
@@ -341,7 +341,7 @@ export function mountSignal(canvas: HTMLCanvasElement, readout: Readout = {}) {
   if (!live) {
     for (let k = 0; k < seconds * RATE; k++) tick();
     draw(0);
-    updateReadout(1e9);
+    updateReadout(0, true);
     const ro = new ResizeObserver(() => {
       resize();
       draw(0);
@@ -399,7 +399,10 @@ export function mountSignal(canvas: HTMLCanvasElement, readout: Readout = {}) {
 
   new ResizeObserver(() => {
     resize();
-    if (!running) draw(performance.now());
+    if (!running) {
+      draw(performance.now());
+      updateReadout(performance.now(), true);
+    }
   }).observe(canvas);
 
   // Farbschema kann wechseln (Schalter oder System)
