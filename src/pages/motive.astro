@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import { href } from '../lib/base';
 
 // Entwurfsseite zum Vergleich der drei Motive für den Kopf. Nicht verlinkt,
 // nicht indexiert; vor der Veröffentlichung entfernen.
@@ -43,7 +44,7 @@ const motive = [
             <h2 id={`h-${m.id}`}>{i + 1} · {m.name}</h2>
           </div>
           <div class="content">
-            <p>{m.kurz} <a href={m.link}>Im Kopf ansehen</a></p>
+            <p>{m.kurz} <a href={href(m.link)}>Im Kopf ansehen</a></p>
           </div>
           <div class="signal">
             <canvas data-motiv={m.id} tabindex="0" role="img" aria-label={m.name} />

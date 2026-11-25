@@ -1,4 +1,5 @@
 ---
+import { href } from '../lib/base';
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import Timeline from '../components/Timeline.astro';
@@ -61,7 +62,7 @@ const jsonLd = {
         <figure class="video">
           <a class="video-link" aria-describedby="video-note">
             <img
-              src="/video-vorschau.svg"
+              src={href('/video-vorschau.svg')}
               width="640"
               height="360"
               alt="Vorschaubild zum Vortragsvideo, Platzhalter"
@@ -97,7 +98,7 @@ const jsonLd = {
           </li>
         </ol>
         <p>
-          <a href="/veroeffentlichungen">Alle Veröffentlichungen</a>, mit Zitationen bei
+          <a href={href('/veroeffentlichungen')}>Alle Veröffentlichungen</a>, mit Zitationen bei
           <a href="https://scholar.google.com/citations?user=623r60sAAAAJ" rel="noopener">Google Scholar</a>.
         </p>
 
@@ -124,8 +125,8 @@ const jsonLd = {
     <section class="ueber" id="ueber-mich" aria-labelledby="h-ueber">
       <img
         class="ueber-foto"
-        src="/ueber-1200.jpg"
-        srcset="/ueber-1200.jpg 1200w, /ueber-1536.jpg 1536w"
+        src={href('/ueber-1200.jpg')}
+        srcset={`${href('/ueber-1200.jpg')} 1200w, ${href('/ueber-1536.jpg')} 1536w`}
         sizes="100vw"
         width="1536"
         height="1024"

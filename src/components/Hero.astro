@@ -1,12 +1,13 @@
 ---
+import { href } from '../lib/base';
 ---
 
 <section class="hero" aria-labelledby="name">
   <div class="buehne">
     <img
       class="buehne-foto"
-      src="/buehne-1200.jpg"
-      srcset="/buehne-1200.jpg 1200w, /buehne-1536.jpg 1536w"
+      src={href('/buehne-1200.jpg')}
+      srcset={`${href('/buehne-1200.jpg')} 1200w, ${href('/buehne-1536.jpg')} 1536w`}
       sizes="100vw"
       width="1536"
       height="1024"
@@ -41,7 +42,7 @@
   <div class="row readout">
     <div class="axis">
       <p class="mono">Motiv <span data-motiv-nr>–</span>/3</p>
-      <p class="mono"><a href="/?motiv=vorhersage" data-motiv-next>nächstes</a></p>
+      <p class="mono"><a href={href('/?motiv=vorhersage')} data-motiv-next>nächstes</a></p>
     </div>
     <div class="content">
       <p class="mono werte" data-ro="werte">
@@ -199,7 +200,7 @@
       unmount?.();
       unmount = mount(canvas!, ui);
       if (nr) nr.textContent = String(current + 1);
-      if (next) next.href = `/?motiv=${MOTIVE[(current + 1) % MOTIVE.length]}`;
+      if (next) next.href = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/?motiv=${MOTIVE[(current + 1) % MOTIVE.length]}`;
       busy = false;
     }
     show(current);

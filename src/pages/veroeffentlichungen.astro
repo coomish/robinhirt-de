@@ -1,4 +1,5 @@
 ---
+import { href } from '../lib/base';
 import Base from '../layouts/Base.astro';
 import { publikationen } from '../data/publikationen';
 
@@ -47,7 +48,7 @@ const description =
     }
     <section class="row section">
       <div class="axis"></div>
-      <div class="content"><p><a href="/">Zurück zur Startseite</a></p></div>
+      <div class="content"><p><a href={href('/')}>Zurück zur Startseite</a></p></div>
     </section>
   </main>
 </Base>

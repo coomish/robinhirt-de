@@ -5,6 +5,7 @@ import { defineConfig } from 'astro/config';
 // lokal bleibt der Platzhalter. Eigene Domain später hier eintragen.
 export default defineConfig({
   site: process.env.SITE ?? 'https://example.invalid',
+  base: process.env.BASE ?? '/',
   output: 'static',
   trailingSlash: 'never',
   build: { inlineStylesheets: 'auto' },
