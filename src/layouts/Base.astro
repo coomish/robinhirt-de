@@ -1,0 +1,107 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  jsonLd?: Record<string, unknown>;
+}
+const { title, description, path = '/', jsonLd } = Astro.props;
+const site = Astro.site ?? new URL('https://example.invalid');
+const canonical = new URL(path, site).href;
+const ogImage = new URL('/og.png', site).href;
+---
+
+<!doctype html>
+<html lang="de" class="no-js">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta name="theme-color" content="#f1f2ef" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#141615" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="de_DE" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="preload"
+      href="/fonts/instrument-sans-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <link
+      rel="preload"
+      href="/fonts/jetbrains-mono-latin-wght-normal.woff2"
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline>
+      document.documentElement.classList.remove('no-js');
+      try {
+        var s = localStorage.getItem('schema');
+        if (s === 'dark' || s === 'light') document.documentElement.dataset.theme = s;
+      } catch (e) {}
+    </script>
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <div class="page">
+      <header class="top">
+        <a href="/">Robin Hirt</a>
+        <button class="schema" type="button" data-schema aria-label="Farbschema wechseln">
+          Schema
+        </button>
+      </header>
+      <slot />
+      <footer class="row foot">
+        <div class="axis"><p class="mono">EN</p></div>
+        <div class="content">
+          <p lang="en">
+            Dr.-Ing. Robin Hirt is an entrepreneur who has worked on applied AI for more than ten
+            years. He founded prenode, an industrial AI company based in Karlsruhe, in 2018 and
+            holds a doctorate in applied AI from KIT.
+          </p>
+          <nav aria-label="Rechtliches" class="mono">
+            <a href="/impressum">Impressum</a>
+            <a href="/datenschutz">Datenschutz</a>
+            <span>Keine Cookies, kein Tracking.</span>
+          </nav>
+        </div>
+      </footer>
+    </div>
+    <script>
+      const root = document.documentElement;
+      const btn = document.querySelector<HTMLButtonElement>('[data-schema]');
+      const system = matchMedia('(prefers-color-scheme: dark)');
+      const current = () => root.dataset.theme ?? (system.matches ? 'dark' : 'light');
+      const label = () => {
+        if (!btn) return;
+        const c = current();
+        btn.textContent = c === 'dark' ? 'Dunkel' : 'Hell';
+        btn.setAttribute('aria-label', `Farbschema wechseln, aktuell ${c === 'dark' ? 'dunkel' : 'hell'}`);
+      };
+      btn?.addEventListener('click', () => {
+        const next = current() === 'dark' ? 'light' : 'dark';
+        root.dataset.theme = next;
+        try {
+          localStorage.setItem('schema', next);
+        } catch {}
+        label();
+      });
+      system.addEventListener('change', label);
+      label();
+    </script>
+  </body>
+</html>

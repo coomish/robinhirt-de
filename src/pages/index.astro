@@ -1,0 +1,170 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import Timeline from '../components/Timeline.astro';
+
+const title = 'Robin Hirt – Unternehmer, Gründer von prenode, Karlsruhe';
+const description =
+  'Dr.-Ing. Robin Hirt, Unternehmer aus Karlsruhe. Seit über zehn Jahren arbeitet er an künstlicher Intelligenz, die im Betrieb funktionieren muss. Gründer von prenode.';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: 'Robin Hirt',
+  honorificPrefix: 'Dr.-Ing.',
+  givenName: 'Robin',
+  familyName: 'Hirt',
+  jobTitle: 'Unternehmer',
+  description,
+  address: { '@type': 'PostalAddress', addressLocality: 'Karlsruhe', addressCountry: 'DE' },
+  alumniOf: { '@type': 'CollegeOrUniversity', name: 'Karlsruher Institut für Technologie' },
+  founder: { '@type': 'Organization', name: 'prenode', url: 'https://www.prenode.de' },
+  sameAs: [
+    'https://www.linkedin.com/in/robinhirt/',
+    'https://scholar.google.com/citations?user=623r60sAAAAJ',
+    'https://www.prenode.de',
+  ],
+};
+---
+
+<Base title={title} description={description} jsonLd={jsonLd}>
+  <main id="inhalt">
+    <Hero />
+
+    <section class="row section" id="werdegang" aria-labelledby="h-werdegang">
+      <div class="axis"><h2 id="h-werdegang">Werdegang</h2></div>
+      <Timeline />
+    </section>
+
+    <section class="row section" id="aktuell" aria-labelledby="h-aktuell">
+      <div class="axis"><h2 id="h-aktuell">Aktuell</h2></div>
+      <div class="content">
+        <p>
+          <a href="https://www.prenode.de" rel="noopener">prenode</a> bringt KI und IoT in
+          Maschinen und Fertigungslinien, für Maschinenbauer und produzierende Unternehmen im
+          deutschsprachigen Raum.
+        </p>
+        <p>Rund 30 Mitarbeitende, ohne Risikokapital gewachsen.</p>
+      </div>
+    </section>
+
+    <section class="row section" id="belege" aria-labelledby="h-belege">
+      <div class="axis"><h2 id="h-belege">Belege</h2></div>
+      <div class="content">
+        <h3>Auftritte</h3>
+        <ul class="list">
+          <li><span class="mono">2023, 2024</span><span>Hannover Messe</span></li>
+          <li>
+            <span class="mono"><span class="todo">2020/21</span></span><span>Handelsblatt KI Summit</span>
+          </li>
+          <li><span class="mono">2026</span><span>AppSphere Innovation Day</span></li>
+          <li><span class="mono">2026</span><span>KI-Connect</span></li>
+        </ul>
+        <figure class="video">
+          <a class="video-link" aria-describedby="video-note">
+            <img
+              src="/video-vorschau.svg"
+              width="640"
+              height="360"
+              alt="Vorschaubild zum Vortragsvideo, Platzhalter"
+              loading="lazy"
+              decoding="async"
+            />
+          </a>
+          <figcaption id="video-note">
+            Vortrag als Video. <span class="todo">Link und Vorschaubild folgen.</span>
+          </figcaption>
+        </figure>
+
+        <h3>Veröffentlichungen</h3>
+        <ol class="refs">
+          <li>
+            <cite>Supervised Machine Learning in Service Systems: Deriving Insights from Distributed Data.</cite>
+            Dissertation, KIT, 2019.
+            <a class="mono" href="https://publikationen.bibliothek.kit.edu/1000099105" rel="noopener"
+              >publikationen.bibliothek.kit.edu/1000099105</a
+            >
+          </li>
+          <li>
+            <cite>How to Conduct Rigorous Supervised Machine Learning in Information Systems Research: The Supervised Machine Learning Reportcard.</cite>
+            Communications of the AIS, 2021.
+            <a class="mono" href="https://doi.org/10.17705/1CAIS.04845" rel="noopener">doi.org/10.17705/1CAIS.04845</a>
+          </li>
+          <li>
+            <cite>Enabling inter-organizational analytics in business networks through meta machine learning.</cite>
+            Information Technology and Management, 2025.
+            <a class="mono" href="https://doi.org/10.1007/s10799-023-00399-7" rel="noopener"
+              >doi.org/10.1007/s10799-023-00399-7</a
+            >
+          </li>
+        </ol>
+        <p>
+          Alle weiteren bei
+          <a href="https://scholar.google.com/citations?user=623r60sAAAAJ" rel="noopener">Google Scholar</a>.
+        </p>
+
+        <h3>Auszeichnungen</h3>
+        <ul class="list">
+          <li><span class="mono">2018</span><span>IBM Best Paper Award, HICSS</span></li>
+          <li><span class="mono">2018, 2019</span><span>Lehrpreise des KIT</span></li>
+          <li>
+            <span class="mono">mit prenode</span>
+            <span>
+              CyberChampions Award 2020, KI-Champion Baden-Württemberg 2021, VDMA Startup the Future
+              <span class="todo">2021/22</span>, Microsoft Intelligent Manufacturing Award 2023
+            </span>
+          </li>
+        </ul>
+
+        <h3>Lehre</h3>
+        <ul class="list">
+          <li><span class="mono">2025</span><span>Lehrauftrag an der Hector School des KIT</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="row section" id="ueber-mich" aria-labelledby="h-ueber">
+      <div class="axis"><h2 id="h-ueber">Über mich</h2></div>
+      <div class="content">
+        <p>
+          Ich bin Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die
+          im Betrieb funktionieren muss und nicht nur in der Demo.
+        </p>
+        <p>Ich lebe in Karlsruhe, laufe viel und trainiere Karate.</p>
+      </div>
+    </section>
+
+    <section class="row section" id="kontakt" aria-labelledby="h-kontakt">
+      <div class="axis"><h2 id="h-kontakt">Kontakt</h2></div>
+      <div class="content">
+        <ul class="list">
+          <li><span class="mono">E-Mail</span><span class="todo">Adresse folgt</span></li>
+          <li>
+            <span class="mono">LinkedIn</span>
+            <a href="https://www.linkedin.com/in/robinhirt/" rel="noopener">linkedin.com/in/robinhirt</a>
+          </li>
+        </ul>
+      </div>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .video {
+    margin-top: 1.4rem;
+    max-width: 22rem;
+  }
+  .video-link {
+    display: block;
+    border: var(--hairline) solid var(--raster);
+  }
+  .video-link img {
+    width: 100%;
+    height: auto;
+  }
+  .video figcaption {
+    margin-top: 0.5rem;
+    font-size: var(--s0);
+    color: var(--blei);
+  }
+</style>

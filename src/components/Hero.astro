@@ -1,0 +1,139 @@
+---
+---
+
+<section class="hero" aria-labelledby="name">
+  <div class="row hero-head">
+    <div class="axis">
+      <div class="portrait" role="img" aria-label="Porträt, Platzhalter">
+        <span class="todo">Porträt folgt</span>
+      </div>
+    </div>
+    <div class="content">
+      <h1 id="name">Dr.-Ing. Robin Hirt</h1>
+      <p class="mono rolle">Gründer von prenode · Karlsruhe</p>
+      <p class="kernsatz">
+        Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb
+        funktionieren muss.
+      </p>
+    </div>
+  </div>
+
+  <div class="signal">
+    <canvas
+      data-signal
+      tabindex="0"
+      role="img"
+      aria-label="Synthetisches Messsignal mit laufender Abweichungserkennung. Mit Maus, Finger oder Leertaste lässt sich die Spur stören."
+    ></canvas>
+  </div>
+
+  <div class="row readout">
+    <div class="axis"><p class="mono">Signal</p></div>
+    <div class="content">
+      <p class="mono werte" aria-live="off">
+        <span>Wert <b data-ro="value">–</b></span>
+        <span>Mittel <b data-ro="mean">–</b></span>
+        <span>Band <b data-ro="band">–</b></span>
+        <span>Abweichungen <b data-ro="events">0</b></span>
+      </p>
+      <p class="hinweis">
+        Synthetisches Signal mit Rauschen, Drift und Ausreißern. Die Erkennung, ein gleitender
+        Mittelwert mit Toleranzband, läuft lokal im Browser. Maus oder Finger stören die Spur.
+      </p>
+    </div>
+  </div>
+</section>
+
+<style>
+  .hero-head {
+    padding-top: clamp(1.5rem, 6vh, 4rem);
+    padding-bottom: clamp(1.5rem, 4vh, 2.5rem);
+    align-items: end;
+  }
+  .portrait {
+    aspect-ratio: 4 / 5;
+    width: 100%;
+    max-width: 9rem;
+    border: 1px dashed var(--bernstein);
+    display: grid;
+    place-items: end start;
+    padding: 0.6rem;
+    font-size: var(--s-1);
+  }
+  .portrait .todo {
+    border: 0;
+  }
+  h1 {
+    font-size: var(--s2);
+    font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .rolle {
+    margin-top: 0.3rem;
+  }
+  .kernsatz {
+    margin-top: 1.6rem;
+    font-size: clamp(1.75rem, 1.1rem + 2.6vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.018em;
+    font-weight: 500;
+    max-width: 24ch;
+    text-wrap: balance;
+  }
+  .signal {
+    border-top: var(--hairline) solid var(--raster);
+    border-bottom: var(--hairline) solid var(--raster);
+  }
+  canvas {
+    width: 100%;
+    height: clamp(220px, 38vh, 420px);
+    touch-action: pan-y;
+    cursor: crosshair;
+  }
+  canvas:focus-visible {
+    outline-offset: -3px;
+  }
+  .readout {
+    padding-top: 0.9rem;
+    padding-bottom: clamp(2rem, 6vh, 4rem);
+  }
+  .werte {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.2rem 1.4rem;
+  }
+  .werte b {
+    font-weight: 500;
+    color: var(--graphit);
+    display: inline-block;
+    min-width: 3.4ch;
+  }
+  .hinweis {
+    margin-top: 0.7rem;
+    color: var(--blei);
+    font-size: var(--s0);
+  }
+  @media (max-width: 900px) {
+    .hero-head {
+      row-gap: 1.5rem;
+    }
+    .portrait {
+      max-width: 7rem;
+    }
+  }
+</style>
+
+<script>
+  import { mountSignal } from '../scripts/signal';
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-signal]');
+  const ro = (n: string) => document.querySelector<HTMLElement>(`[data-ro="${n}"]`);
+  if (canvas) {
+    mountSignal(canvas, { value: ro('value'), mean: ro('mean'), band: ro('band'), events: ro('events') });
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const h = document.querySelector('.hinweis');
+      if (h)
+        h.textContent =
+          'Synthetisches Signal als Standbild, da reduzierte Bewegung eingestellt ist. Die Erkennung, ein gleitender Mittelwert mit Toleranzband, lief lokal im Browser.';
+    }
+  }
+</script>
