@@ -75,7 +75,7 @@
     width: 112%; /* etwas breiter, damit die Person weiter rechts sitzt */
     height: 100%;
     object-fit: cover;
-    object-position: 50% 40%;
+    object-position: 50% 15%; /* Kopf bleibt auch bei breiten, flachen Fenstern im Bild */
     filter: grayscale(1);
   }
   :root[data-theme='dark'] .buehne-foto {
@@ -90,7 +90,7 @@
     position: absolute;
     left: var(--rand);
     bottom: clamp(1.5rem, 5vh, 3.5rem);
-    max-width: min(40vw, 32rem);
+    max-width: min(38vw, 32rem);
   }
   h1 {
     font-size: var(--s2);
