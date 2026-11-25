@@ -61,9 +61,10 @@
 
 <style>
   /* Die Bühne: Foto über die volle Breite, der Kernsatz im freien Raum links */
+  /* Der erste Bildschirm teilt sich: oben die Bühne, unten das Motiv */
   .buehne {
     position: relative;
-    height: clamp(520px, 80vh, 860px);
+    height: clamp(380px, 56svh, 640px);
     overflow: hidden;
     background: var(--papier);
   }
@@ -88,7 +89,7 @@
   .buehne-text {
     position: absolute;
     left: var(--rand);
-    bottom: clamp(2rem, 7vh, 4.5rem);
+    bottom: clamp(1.5rem, 5vh, 3.5rem);
     max-width: min(40vw, 32rem);
   }
   h1 {
@@ -103,7 +104,7 @@
   }
   .kernsatz {
     margin-top: 1.4rem;
-    font-size: clamp(1.6rem, 0.8rem + 2.2vw, 2.8rem);
+    font-size: clamp(1.5rem, 0.6rem + 1.4vw + 1.2vh, 2.8rem);
     line-height: 1.1;
     letter-spacing: -0.018em;
     font-weight: 500;
@@ -116,13 +117,16 @@
     .buehne-foto {
       position: static;
       width: 100%;
-      height: clamp(300px, 56vh, 480px);
+      height: clamp(280px, 48svh, 460px);
       object-position: 60% 30%;
     }
     .buehne-text {
       position: static;
       max-width: none;
       padding: 1.4rem var(--rand) 2rem;
+    }
+    canvas {
+      height: clamp(260px, 44svh, 420px);
     }
   }
   .signal {
@@ -131,7 +135,7 @@
   }
   canvas {
     width: 100%;
-    height: clamp(300px, 50vh, 560px);
+    height: clamp(260px, calc(100svh - 4.2rem - clamp(380px, 56svh, 640px)), 520px);
     touch-action: pan-y;
     cursor: crosshair;
   }
