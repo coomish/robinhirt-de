@@ -182,3 +182,28 @@ Portfolio-Seite. Geändert:
 - Literaturangaben: lange DOI-Links brechen jetzt um statt über den Rand zu laufen.
 - Nach einer Größenänderung füllt sich der Puffer sofort auf, damit die Spur
   die ganze Breite nutzt.
+
+## Zweite Runde: das Signal als Mehrkanal-Schrieb
+
+Rückmeldung: die Einzelspur war zu einfach. Jetzt drei Kanäle, wie an einer
+Maschine überwacht: Vibration, Temperatur, Strom.
+
+- **Gekoppelt.** Strom erwärmt mit 1,2 s Verzögerung und träge; Vibration
+  schlägt fast sofort auf den Strom durch; eine Laständerung rüttelt leicht.
+  Wer einen Kanal mit der Maus zieht, sieht die anderen nachziehen. Die
+  Kopplung läuft über die gemessene Abweichung vom Mittel, nicht über den
+  Generator; sie ist also selbst Teil dessen, was die Erkennung sieht.
+- **Messcursor.** Unter dem Zeiger steht eine Hairline mit Zeitabstand und den
+  drei Werten an dieser Stelle. Messen, nicht nur ansehen.
+- **Bandbreite am Rand.** Rechts vom Schreibkopf steht die halbe Bandbreite
+  (±σ·K) je Kanal in Mono, direkt an der Spur statt in einer Anzeige darunter.
+- **Protokoll.** Jede Abweichung wird eingetragen (Zeit, Kanal, Art, Dauer,
+  Stärke in σ). Die Art wird aus den Daten bestimmt: kürzer als 0,2 s ist
+  eine Spitze, ein verschobener Mittelwert ein Sprung, sonst Streuung; was
+  unter dem Zeiger entstand, heißt Eingriff.
+- **Zeitachse** mit absoluter Laufzeit alle fünf Sekunden, der Moment beim
+  Laden zeichnet die drei Kanäle um 180 ms versetzt.
+- Fotos: das Porträt im Kopf (4:5, neutraler Hintergrund) und ein zweites bei
+  „Über mich“ in der Achsenspalte, beide ohne Rahmen, ohne Rundung.
+- Tastatur: Ziffern wählen den Kanal, Leertaste und Pfeile stoßen an; ein
+  Sprunglink „Zum Inhalt“ steht vor dem Kopf.

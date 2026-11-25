@@ -58,6 +58,7 @@ const ogImage = new URL('/og.png', site).href;
   </head>
   <body>
     <div class="page">
+      <a class="skip" href="#inhalt">Zum Inhalt</a>
       <header class="top">
         <a href="/">Robin Hirt</a>
         <button class="schema" type="button" data-schema aria-label="Farbschema wechseln">
@@ -66,7 +67,7 @@ const ogImage = new URL('/og.png', site).href;
       </header>
       <slot />
       <footer class="row foot">
-        <div class="axis"><p class="mono">EN</p></div>
+        <div class="axis"><p class="mono" aria-hidden="true">EN</p></div>
         <div class="content">
           <p lang="en">
             Dr.-Ing. Robin Hirt is an entrepreneur who has worked on applied AI for more than ten

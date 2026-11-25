@@ -53,10 +53,8 @@ const jsonLd = {
       <div class="content">
         <h3>Auftritte</h3>
         <ul class="list">
+          <li><span class="mono">2021</span><span>Handelsblatt KI Summit</span></li>
           <li><span class="mono">2023, 2024</span><span>Hannover Messe</span></li>
-          <li>
-            <span class="mono"><span class="todo">2020/21</span></span><span>Handelsblatt KI Summit</span>
-          </li>
           <li><span class="mono">2026</span><span>AppSphere Innovation Day</span></li>
           <li><span class="mono">2026</span><span>KI-Connect</span></li>
         </ul>
@@ -124,7 +122,20 @@ const jsonLd = {
     </section>
 
     <section class="row section" id="ueber-mich" aria-labelledby="h-ueber">
-      <div class="axis"><h2 id="h-ueber">Über mich</h2></div>
+      <div class="axis">
+        <h2 id="h-ueber">Über mich</h2>
+        <img
+          class="ueber-foto"
+          src="/ueber-mich-450.jpg"
+          srcset="/ueber-mich-450.jpg 450w, /ueber-mich-900.jpg 900w"
+          sizes="(max-width: 900px) 7rem, 9rem"
+          width="900"
+          height="900"
+          alt="Robin Hirt, Porträt vor einer Zimmerpflanze"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
       <div class="content">
         <p>
           Ich bin Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die
@@ -150,6 +161,18 @@ const jsonLd = {
 </Base>
 
 <style>
+  .ueber-foto {
+    width: 100%;
+    max-width: 9rem;
+    height: auto;
+    margin-top: 2.6rem;
+  }
+  @media (max-width: 900px) {
+    .ueber-foto {
+      max-width: 7rem;
+      margin-top: 0.6rem;
+    }
+  }
   .video {
     margin-top: 1.4rem;
     max-width: 22rem;
