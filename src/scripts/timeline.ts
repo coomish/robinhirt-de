@@ -3,10 +3,12 @@
  * beim Scrollen gezogen; jeder Eintrag füllt sich, wenn die Spur ihn erreicht.
  */
 export function mountTimeline(root: HTMLElement) {
-  const svg = root.querySelector<SVGSVGElement>('svg.trace');
-  const path = svg?.querySelector<SVGPathElement>('path');
+  const svgEl = root.querySelector<SVGSVGElement>('svg.trace');
+  const pathEl = svgEl?.querySelector<SVGPathElement>('path');
   const items = Array.from(root.querySelectorAll<HTMLElement>('li'));
-  if (!svg || !path) return;
+  if (!svgEl || !pathEl) return;
+  const svg: SVGSVGElement = svgEl;
+  const path: SVGPathElement = pathEl;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let length = 0;
