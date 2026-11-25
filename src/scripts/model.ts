@@ -50,7 +50,7 @@ class Truth {
   private ph: number[];
   private w = [1.1, 2.3, 3.7];
   private a = [0.42, 0.22, 0.1];
-  private rate = [0.07, -0.05, 0.11]; // Drift der Phasen in rad/s
+  private rate = [0.02, -0.012, 0.03]; // Drift der Phasen in rad/s, langsam genug für 26 s Gedächtnis
   constructor(rng: Rng) {
     this.ph = [rng() * 6.3, rng() * 6.3, rng() * 6.3];
   }
