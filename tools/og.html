@@ -3,28 +3,42 @@
 @font-face{font-family:'Instrument Sans';font-weight:400 700;src:url('../public/fonts/instrument-sans-latin-wght-normal.woff2') format('woff2-variations')}
 @font-face{font-family:'JetBrains Mono';font-weight:100 800;src:url('../public/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations')}
 html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#f1f2ef;color:#1a1c1a;font-family:'Instrument Sans',sans-serif}
-.name{position:absolute;left:72px;top:64px;font-size:28px;font-weight:600}
-.rolle{position:absolute;left:72px;top:104px;font-family:'JetBrains Mono',monospace;font-size:18px;color:#5b615b}
-.satz{position:absolute;left:72px;top:170px;width:980px;font-size:58px;line-height:1.1;letter-spacing:-0.018em;font-weight:500}
-svg{position:absolute;left:0;top:420px}
-.fuss{position:absolute;left:72px;top:586px;font-family:'JetBrains Mono',monospace;font-size:16px;color:#5b615b}
+.name{position:absolute;left:72px;top:56px;font-size:28px;font-weight:600}
+.rolle{position:absolute;left:72px;top:96px;font-family:'JetBrains Mono',monospace;font-size:18px;color:#5b615b}
+.satz{position:absolute;left:72px;top:156px;width:980px;font-size:56px;line-height:1.1;letter-spacing:-0.018em;font-weight:500}
+svg{position:absolute;left:0;top:372px}
+.fuss{position:absolute;left:72px;top:592px;font-family:'JetBrains Mono',monospace;font-size:15px;color:#5b615b}
 </style></head><body>
 <div class="name">Dr.-Ing. Robin Hirt</div>
 <div class="rolle">Gründer von prenode · Karlsruhe</div>
 <div class="satz">Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb funktionieren muss.</div>
-<svg width="1200" height="160" viewBox="0 0 1200 160"><path id="band" fill="rgba(26,28,26,0.06)"/><path id="trace" fill="none" stroke="#1a1c1a" stroke-width="2" stroke-linejoin="round"/><g id="marks"></g></svg>
-<div class="fuss">Synthetisches Signal · Erkennung lokal im Browser</div>
+<svg width="1200" height="216" viewBox="0 0 1200 216" id="svg"></svg>
+<div class="fuss">Synthetische Signale, drei Kanäle · Erkennung lokal im Browser</div>
 <script>
 let a=2018;const r=()=>{a=(a+0x6d2b79f5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296};
 const g=()=>Math.sqrt(-2*Math.log(r()||1e-9))*Math.cos(2*Math.PI*r());
-const N=600,v=[],win=[],lo=[],hi=[],marks=[];let drift=0,step=0;
-for(let i=0;i<N;i++){drift=drift*0.99+g()*0.006;step*=0.99;let sp=0;if(i===300)sp=0.9;if(i===470)step+=0.45;
- const x=0.3*Math.sin(i/90)+drift+step+sp+g()*0.05;v.push(x);
- const n=win.length;let m=0,s=0.05;if(n>=20){m=win.reduce((p,c)=>p+c,0)/n;const q=win.reduce((p,c)=>p+c*c,0)/n-m*m;s=Math.max(Math.sqrt(Math.max(0,q)),0.05)}else if(n){m=win.reduce((p,c)=>p+c,0)/n}
- lo.push(m-3.5*s);hi.push(m+3.5*s);if(n>=20&&Math.abs(x-m)>3.5*s&&(!marks.length||i-marks[marks.length-1]>30))marks.push(i);
- win.push(x);if(win.length>120)win.shift();}
-const X=i=>i*2,Y=x=>80-x*55;
-document.getElementById('trace').setAttribute('d',v.map((x,i)=>(i?'L':'M')+X(i)+' '+Y(x).toFixed(1)).join(' '));
-document.getElementById('band').setAttribute('d',hi.map((x,i)=>(i?'L':'M')+X(i)+' '+Y(x).toFixed(1)).join(' ')+lo.map((x,i)=>'L'+X(N-1-i)+' '+Y(lo[N-1-i]).toFixed(1)).join(' ')+'Z');
-document.getElementById('marks').innerHTML=marks.map(i=>`<circle cx="${X(i)}" cy="${Y(v[i]).toFixed(1)}" r="5" fill="#a3470a"/>`).join('');
+const N=600,LANE=72,K=3.5;
+const specs=[
+ {name:'Vibration',noise:0.07,slow:0.1,per:90,spike:[200,470],step:[],min:0.07,range:0.9},
+ {name:'Temperatur',noise:0.012,slow:0.3,per:400,spike:[],step:[330],min:0.03,range:0.9},
+ {name:'Strom',noise:0.035,slow:0.15,per:150,spike:[90],step:[300],min:0.05,range:1.0},
+];
+let out='';
+specs.forEach((s,c)=>{
+ const v=[],win=[],lo=[],hi=[],marks=[];let step=0,drift=0;
+ for(let i=0;i<N;i++){drift=drift*0.99+g()*0.004;step*=0.992;let sp=0;if(s.spike.includes(i))sp=0.6;if(s.step.includes(i))step+=0.45;
+  const x=s.slow*Math.sin(i/s.per+c)+drift+step+sp+g()*s.noise;v.push(x);
+  const n=win.length;let m=0,sg=s.min;if(n>=20){m=win.reduce((p,q)=>p+q,0)/n;const q=win.reduce((p,q)=>p+q*q,0)/n-m*m;sg=Math.max(Math.sqrt(Math.max(0,q)),s.min)}else if(n){m=win.reduce((p,q)=>p+q,0)/n}
+  lo.push(m-K*sg);hi.push(m+K*sg);if(n>=20&&Math.abs(x-m)>K*sg&&(!marks.length||i-marks[marks.length-1]>30))marks.push(i);
+  win.push(x);if(win.length>120)win.shift();}
+ const y0=c*LANE,X=i=>i*1.85,Y=x=>Math.max(y0+3,Math.min(y0+LANE-3,y0+LANE/2-x/s.range*(LANE/2-8)));
+ const path=arr=>arr.map((x,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(x).toFixed(1)).join(' ');
+ if(c)out+=`<line x1="0" y1="${y0+0.5}" x2="1200" y2="${y0+0.5}" stroke="#d3d6d0"/>`;
+ out+=`<text x="16" y="${y0+15}" font-family="JetBrains Mono" font-size="11" fill="#5b615b">${s.name}</text>`;
+ out+=`<path d="${path(hi)} ${lo.map((x,i)=>'L'+X(N-1-i).toFixed(1)+' '+Y(lo[N-1-i]).toFixed(1)).join(' ')} Z" fill="rgba(26,28,26,0.06)"/>`;
+ out+=`<path d="${path(v)}" fill="none" stroke="#1a1c1a" stroke-width="1.5" stroke-linejoin="round"/>`;
+ out+=marks.map(i=>`<circle cx="${X(i).toFixed(1)}" cy="${Y(v[i]).toFixed(1)}" r="4.5" fill="#a3470a"/>`).join('');
+ out+=`<text x="${X(N-1)+12}" y="${(Y((hi[N-1]+lo[N-1])/2)+4).toFixed(1)}" font-family="JetBrains Mono" font-size="11" fill="#5b615b">±${((hi[N-1]-lo[N-1])/2).toFixed(2)}</text>`;
+});
+document.getElementById('svg').innerHTML=out;
 </script></body></html>
