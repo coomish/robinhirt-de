@@ -3,7 +3,7 @@
  * Spur; rechts zeichnet es seinen Schmetterling. Fünf autoregressive Modelle
  * verschiedener Ordnung lernen laufend aus den letzten Sekunden und sagen
  * 0,5 s voraus, als Fächer vor dem Jetzt. Gestrichelt läuft mit, was für
- * jeden Moment vorhergesagt war; Bernstein, wo die Wirklichkeit es verfehlt.
+ * jeden Moment vorhergesagt war; Türkis, wo die Wirklichkeit es verfehlt.
  */
 import { gauss, hint, mulberry32, readColors, readout, runLoop, setupCanvas, stillImage, fmt, MONO, type Colors, type Rng, type UI, type Unmount } from './ui';
 
@@ -18,11 +18,11 @@ const FIT_EVERY = 5;
 const MAX_SECONDS = 14;
 const CAP = (MAX_SECONDS + HORIZON) * RATE + 8;
 const TOL = 0.12;
-const SCALE = 22;
+const SCALE = 19;
 const TRAIL = 2400; // Zustände für den Schmetterling
 
 export const HINWEIS_VORHERSAGE =
-  'Ein chaotisches System (Lorenz) läuft, fünf Modelle sagen 0,5 s voraus; Bernstein, wo die Wirklichkeit sie verfehlt. Maus zieht, Klick stößt an.';
+  'Ein chaotisches System (Lorenz) läuft, fünf Modelle sagen 0,5 s voraus; Türkis, wo die Wirklichkeit sie verfehlt. Maus zieht, Klick stößt an.';
 
 class Lorenz {
   x: number;
@@ -154,11 +154,11 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
   let Wp = 0; // Breite der Zeitspur
   let seconds = 10;
   let pxPerSample = 2;
-  const padY = 18;
+  const padY = 10;
   const xNow = () => Wp - 16 - HN * pxPerSample;
   function resize() {
     ({ W, H } = setupCanvas(canvas, ctx!));
-    Wp = W > 720 ? Math.round(W * 0.7) : W;
+    Wp = W > 720 ? Math.round(W * 0.66) : W;
     seconds = Math.min(MAX_SECONDS, Math.max(5, Wp / 80));
     pxPerSample = (Wp - 24) / (seconds * RATE + HN);
   }
@@ -222,11 +222,11 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
   function drawButterfly() {
     if (Wp >= W || tn < 2) return;
     const c = ctx!;
-    const x0 = Wp + 12;
-    const w = W - x0 - 12;
-    const h = H - 24;
-    const bx = (x: number) => x0 + w / 2 + (x / 24) * (w / 2);
-    const by = (z: number) => 12 + h - (z / 52) * h;
+    const x0 = Wp + 8;
+    const w = W - x0 - 8;
+    const h = H - 16;
+    const bx = (x: number) => x0 + w / 2 + (x / 21) * (w / 2);
+    const by = (z: number) => 8 + h - (z / 50) * h;
     c.strokeStyle = colors.raster;
     c.lineWidth = 1;
     c.beginPath();
@@ -254,7 +254,7 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
     }
     c.globalAlpha = 1;
     const last = (th - 1 + TRAIL) % TRAIL;
-    c.fillStyle = missNow ? colors.bernstein : colors.graphit;
+    c.fillStyle = missNow ? colors.signal : colors.graphit;
     c.beginPath();
     c.arc(bx(tx[last]), by(tz[last]), 3.5, 0, Math.PI * 2);
     c.fill();
@@ -293,7 +293,7 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
     c.fillText('+0,5 s', xn + 6, 30);
 
     if (n >= 2) {
-      c.fillStyle = colors.bernstein;
+      c.fillStyle = colors.signal;
       c.globalAlpha = 0.22;
       for (let k = n - 1; k >= 1; k--) {
         const a = count - 1 - k;
@@ -362,7 +362,7 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
         c.globalAlpha = 1;
         c.setLineDash([]);
       }
-      c.fillStyle = missNow ? colors.bernstein : colors.graphit;
+      c.fillStyle = missNow ? colors.signal : colors.graphit;
       c.beginPath();
       c.arc(xAt(0), yOf(at(0)), 3, 0, Math.PI * 2);
       c.fill();

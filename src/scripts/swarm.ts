@@ -4,7 +4,7 @@
  * Jäger: Angst springt von Nachbar zu Nachbar und läuft als Welle durch den
  * Schwarm, so entstehen die Formen einer Murmuration. Ein Clustering (k-means,
  * Zahl der Gruppen aus den Daten gewählt) findet die Gruppen und umreißt sie;
- * wer weit von seiner Gruppe entfernt ist, wird Bernstein. Alles lokal.
+ * wer weit von seiner Gruppe entfernt ist, wird Türkis. Alles lokal.
  */
 import { hint, mulberry32, readColors, readout, runLoop, setupCanvas, stillImage, MONO, type Colors, type Rng, type UI, type Unmount } from './ui';
 
@@ -63,7 +63,7 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
 
   function seed() {
     seeded = true;
-    N = Math.max(700, Math.min(MAX_N, Math.round((W * H) / 420)));
+    N = Math.max(800, Math.min(MAX_N, Math.round((W * H) / 300)));
     for (let i = 0; i < N; i++) {
       const g = i % 3;
       px[i] = W * (0.22 + 0.28 * g) + (rng() - 0.5) * W * 0.14;
@@ -119,7 +119,10 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
     // Wind: ein langsames, wirbelndes Feld
     const wx0 = Math.sin(t * 0.17) * 11;
     const wy0 = Math.cos(t * 0.13) * 7;
-    const roostR = Math.min(W, H) * 0.42;
+    // Der Platz des Schwarms wandert langsam über die ganze Fläche
+    const roostR = Math.min(W, H) * 0.34;
+    const rx = W / 2 + Math.sin(t * 0.09) * (W / 2 - roostR * 0.9);
+    const ry = H / 2 + Math.sin(t * 0.14 + 2.1) * (H / 2 - roostR * 0.8);
     for (let i = 0; i < N; i++) {
       let ax = 0;
       let ay = 0;
@@ -166,8 +169,8 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
       }
       // Zug zur Mitte, sobald es weit hinaus geht: der Schwarm bleibt über seinem Platz
       {
-        const dx = W / 2 - px[i];
-        const dy = H / 2 - py[i];
+        const dx = rx - px[i];
+        const dy = ry - py[i];
         const d = Math.hypot(dx, dy);
         if (d > roostR) {
           const s = (d - roostR) / roostR;
@@ -194,7 +197,7 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
       ax += wx0 + Math.sin(py[i] * 0.012 + t * 0.4) * 8;
       ay += wy0 + Math.cos(px[i] * 0.01 - t * 0.3) * 6;
       // sanfter Rand
-      const m = 90;
+      const m = 40;
       if (px[i] < m) ax += (m - px[i]) * 9;
       if (px[i] > W - m) ax -= (px[i] - (W - m)) * 9;
       if (py[i] < m) ay += (m - py[i]) * 9;
@@ -381,7 +384,7 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
       if (outlier[i]) continue;
       c.fillRect(px[i] - dot / 2, py[i] - dot / 2, dot, dot);
     }
-    c.fillStyle = colors.bernstein;
+    c.fillStyle = colors.signal;
     c.globalAlpha = 1;
     for (let i = 0; i < N; i++) {
       if (!outlier[i]) continue;

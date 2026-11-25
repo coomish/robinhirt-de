@@ -14,12 +14,12 @@ const NOISE = 0.09; // σ des Messrauschens
 const LENGTH = 0.11; // Längenskala des Kerns, in Breiten
 const SIGNAL = 0.5; // Signalvarianz des Kerns
 const GRID = 140; // Stützstellen der Vorhersage
-const SAMPLES = 16; // Kurven aus der Nachverteilung
+const SAMPLES = 24; // Kurven aus der Nachverteilung
 const OUTLIER_Z = 3; // Ausreißer ab so vielen σ (Leave-one-out)
-const RANGE = 1.15;
+const RANGE = 1.05;
 
 export const HINWEIS_MODELL =
-  'Ein Gauß-Prozess lernt live eine verborgene Kurve; der Fächer zeigt, was er für möglich hält, Bernstein, was nicht passt. Klick setzt Punkte.';
+  'Ein Gauß-Prozess lernt live eine verborgene Kurve; der Fächer zeigt, was er für möglich hält, Türkis, was nicht passt. Klick setzt Punkte.';
 
 export interface Point {
   x: number;
@@ -32,7 +32,7 @@ export interface Point {
 class Truth {
   private ph: number[];
   private w = [1.1, 2.3, 3.7];
-  private a = [0.42, 0.22, 0.1];
+  private a = [0.58, 0.3, 0.14];
   private rate = [0.02, -0.012, 0.03];
   constructor(rng: Rng) {
     this.ph = [rng() * 6.3, rng() * 6.3, rng() * 6.3];
@@ -206,8 +206,8 @@ export function mountModel(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
   let outliers = 0;
   let W = 0;
   let H = 0;
-  const padX = 24;
-  const padY = 22;
+  const padX = 0;
+  const padY = 10;
 
   function resize() {
     ({ W, H } = setupCanvas(canvas, ctx!));
@@ -317,7 +317,7 @@ export function mountModel(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
       const age = (t - p.t) / MAX_AGE;
       const a = 0.2 + 0.8 * Math.max(0, 1 - age);
       c.globalAlpha = p.out ? Math.max(a, 0.6) : a;
-      c.fillStyle = p.out ? colors.bernstein : colors.graphit;
+      c.fillStyle = p.out ? colors.signal : colors.graphit;
       c.beginPath();
       c.arc(xOf(p.x), yOf(p.y), p.out ? 3.6 : 2.8, 0, Math.PI * 2);
       c.fill();

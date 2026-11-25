@@ -7,11 +7,10 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 - [ ] Domain eintragen: `site` in `astro.config.mjs` (steht auf `https://example.invalid`).
       Davon hängen Canonical-Link, Open-Graph-URL und das OG-Bild ab.
 - [ ] E-Mail-Adresse im Abschnitt Kontakt (`src/pages/index.astro`).
-- [x] Porträt für den Kopf: `public/portrait-640.jpg` (aus Drive „Robin Hirt.jpeg“,
-      Sales-Ablage, Oktober 2026, 800 px, 4:5 beschnitten). Falls ein größeres
-      Original existiert, austauschen; 640 px reichen für 9 rem bei 2×.
-- [x] Foto bei „Über mich“: `public/ueber-mich-900.jpg` (aus Drive „Robin_Portrait.jpg“,
-      2021, Pullover vor Pflanze). Alternative im Drive: „robin_hirt.jpeg“ (2020, Backsteinwand).
+- [x] Porträt im Kopf: `public/portrait-640.jpg` aus dem gelieferten Bild 1 (4:5).
+- [x] Breites Bild bei „Über mich“: `public/ueber-mich-1600.jpg` aus Bild 3.
+- [x] Bild bei „Kontakt“: `public/kontakt-900.jpg`, quadratischer Ausschnitt aus Bild 2.
+- [x] OG-Bild: Bild 3 mit Text im freien Raum (`tools/og.html`, `public/og-foto.jpg`).
 - [ ] Bühnenfoto: im Drive nicht gefunden. Durchsucht: Marketing-Ablage (Hannover-Messe-
       Ordner 2020/2021/2024, „Vortrag Industrial Transformation Stage“, Handelsblatt
       KI Summit), Admin „20240425 Messe_“, Dateinamen mit Bühne/Vortrag/Keynote/Stage.
@@ -43,8 +42,9 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
   (Chrome headless, 1200×630) und zeigt das lernende Modell mit Band. Bei Textänderung neu
   erzeugen: `python3 -m http.server 4333` im Projektordner, dann Chrome headless
   mit `--screenshot` auf `http://localhost:4333/tools/og.html`.
-- Die Fotos stammen aus dem prenode-Drive. Nutzungsrechte (Fotograf) vor
-  Veröffentlichung prüfen.
+- Die Fotos sind die drei gelieferten Bilder. Nutzungsrechte (Fotograf) vor
+  Veröffentlichung prüfen. Die Originale liegen nicht im Repository, nur die
+  beschnittenen Ableitungen in `public/`.
 
 ## Vor der Veröffentlichung
 

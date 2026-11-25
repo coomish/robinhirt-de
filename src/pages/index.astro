@@ -122,20 +122,7 @@ const jsonLd = {
     </section>
 
     <section class="row section" id="ueber-mich" aria-labelledby="h-ueber">
-      <div class="axis">
-        <h2 id="h-ueber">Über mich</h2>
-        <img
-          class="ueber-foto"
-          src="/ueber-mich-450.jpg"
-          srcset="/ueber-mich-450.jpg 450w, /ueber-mich-900.jpg 900w"
-          sizes="(max-width: 900px) 7rem, 9rem"
-          width="900"
-          height="900"
-          alt="Robin Hirt, Porträt vor einer Zimmerpflanze"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
+      <div class="axis"><h2 id="h-ueber">Über mich</h2></div>
       <div class="content">
         <p>
           Ich bin Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die
@@ -143,10 +130,35 @@ const jsonLd = {
         </p>
         <p>Ich lebe in Karlsruhe, laufe viel und trainiere Karate.</p>
       </div>
+      <figure class="breit">
+        <img
+          src="/ueber-mich-900.jpg"
+          srcset="/ueber-mich-900.jpg 900w, /ueber-mich-1600.jpg 1600w"
+          sizes="(max-width: 900px) 100vw, 56rem"
+          width="1600"
+          height="900"
+          alt="Robin Hirt vor einer hellen Wand, Blick in die Kamera"
+          loading="lazy"
+          decoding="async"
+        />
+      </figure>
     </section>
 
     <section class="row section" id="kontakt" aria-labelledby="h-kontakt">
-      <div class="axis"><h2 id="h-kontakt">Kontakt</h2></div>
+      <div class="axis">
+        <h2 id="h-kontakt">Kontakt</h2>
+        <img
+          class="kontakt-foto"
+          src="/kontakt-450.jpg"
+          srcset="/kontakt-450.jpg 450w, /kontakt-900.jpg 900w"
+          sizes="(max-width: 900px) 7rem, 9rem"
+          width="900"
+          height="900"
+          alt="Robin Hirt, sitzend, lächelnd"
+          loading="lazy"
+          decoding="async"
+        />
+      </div>
       <div class="content">
         <ul class="list">
           <li><span class="mono">E-Mail</span><span><span class="todo">Adresse folgt</span></span></li>
@@ -161,14 +173,23 @@ const jsonLd = {
 </Base>
 
 <style>
-  .ueber-foto {
+  .breit {
+    grid-column: 1 / -1;
+    margin-top: 1.4rem;
+  }
+  .breit img {
+    width: 100%;
+    max-width: 56rem;
+    height: auto;
+  }
+  .kontakt-foto {
     width: 100%;
     max-width: 9rem;
     height: auto;
     margin-top: 2.6rem;
   }
   @media (max-width: 900px) {
-    .ueber-foto {
+    .kontakt-foto {
       max-width: 7rem;
       margin-top: 0.6rem;
     }

@@ -25,7 +25,7 @@ export interface Colors {
   graphit: string;
   blei: string;
   raster: string;
-  bernstein: string;
+  signal: string;
   band: string;
   papier: string;
 }
@@ -37,7 +37,7 @@ export function readColors(el: HTMLElement): Colors {
     graphit: get('--graphit'),
     blei: get('--blei'),
     raster: get('--raster'),
-    bernstein: get('--bernstein'),
+    signal: get('--signal'),
     band: get('--band'),
     papier: get('--papier'),
   };

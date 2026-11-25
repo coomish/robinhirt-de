@@ -36,12 +36,12 @@
 /* ---- Farben ------------------------------------------------------------- */
 
 :root {
-  --papier: #f1f2ef;
-  --graphit: #1a1c1a;
-  --blei: #5b615b;
-  --raster: #d3d6d0;
-  --bernstein: #a3470a;
-  --band: rgb(26 28 26 / 0.06);
+  --papier: #f4f6f7;
+  --graphit: #15191d;
+  --blei: #58646e;
+  --raster: #d3dae0;
+  --signal: #087a80;
+  --band: rgb(21 25 29 / 0.06);
   color-scheme: light;
 
   --sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -66,22 +66,22 @@
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --papier: #141615;
-    --graphit: #e4e6e1;
-    --blei: #9ba39b;
-    --raster: #2a2e2a;
-    --bernstein: #e09a3a;
-    --band: rgb(228 230 225 / 0.07);
+    --papier: #0f1316;
+    --graphit: #e6eaee;
+    --blei: #98a4ae;
+    --raster: #262d33;
+    --signal: #35d0c4;
+    --band: rgb(230 234 238 / 0.07);
     color-scheme: dark;
   }
 }
 :root[data-theme='dark'] {
-  --papier: #141615;
-  --graphit: #e4e6e1;
-  --blei: #9ba39b;
-  --raster: #2a2e2a;
-  --bernstein: #e09a3a;
-  --band: rgb(228 230 225 / 0.07);
+  --papier: #0f1316;
+  --graphit: #e6eaee;
+  --blei: #98a4ae;
+  --raster: #262d33;
+  --signal: #35d0c4;
+  --band: rgb(230 234 238 / 0.07);
   color-scheme: dark;
 }
 
@@ -184,8 +184,8 @@ canvas {
 
 /* Sichtbarer Platzhalter: eine Abweichung vom fertigen Stand */
 .todo {
-  color: var(--bernstein);
-  border-bottom: 1px dashed var(--bernstein);
+  color: var(--signal);
+  border-bottom: 1px dashed var(--signal);
   text-decoration: none;
 }
 .todo::before {

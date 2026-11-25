@@ -2,41 +2,16 @@
 <style>
 @font-face{font-family:'Instrument Sans';font-weight:400 700;src:url('../public/fonts/instrument-sans-latin-wght-normal.woff2') format('woff2-variations')}
 @font-face{font-family:'JetBrains Mono';font-weight:100 800;src:url('../public/fonts/jetbrains-mono-latin-wght-normal.woff2') format('woff2-variations')}
-html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#f1f2ef;color:#1a1c1a;font-family:'Instrument Sans',sans-serif}
-.name{position:absolute;left:72px;top:56px;font-size:28px;font-weight:600}
-.rolle{position:absolute;left:72px;top:96px;font-family:'JetBrains Mono',monospace;font-size:18px;color:#5b615b}
-.satz{position:absolute;left:72px;top:156px;width:980px;font-size:56px;line-height:1.1;letter-spacing:-0.018em;font-weight:500}
-svg{position:absolute;left:0;top:372px}
-.fuss{position:absolute;left:72px;top:592px;font-family:'JetBrains Mono',monospace;font-size:15px;color:#5b615b}
+html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#f4f6f7;color:#15191d;font-family:'Instrument Sans',sans-serif}
+.bg{position:absolute;inset:0;width:1200px;height:630px;object-fit:cover}
+.name{position:absolute;left:600px;top:150px;font-size:26px;font-weight:600}
+.rolle{position:absolute;left:600px;top:186px;font-family:'JetBrains Mono',monospace;font-size:16px;color:#58646e}
+.satz{position:absolute;left:600px;top:236px;width:560px;font-size:40px;line-height:1.1;letter-spacing:-0.018em;font-weight:500}
+.strich{position:absolute;left:600px;top:512px;width:64px;height:3px;background:#087a80}
 </style></head><body>
+<img class="bg" src="../public/og-foto.jpg" alt="">
 <div class="name">Dr.-Ing. Robin Hirt</div>
 <div class="rolle">Gründer von prenode · Karlsruhe</div>
 <div class="satz">Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb funktionieren muss.</div>
-<svg width="1200" height="216" viewBox="0 0 1200 216" id="svg"></svg>
-<div class="fuss">Ein Modell lernt eine verborgene Kurve · Unsicherheit als Band · gerechnet im Browser</div>
-<script>
-// Gauß-Prozess wie in src/scripts/model.ts, hier für ein Standbild
-let a=2018;const r=()=>{a=(a+0x6d2b79f5)>>>0;let t=a;t=Math.imul(t^(t>>>15),t|1);t^=t+Math.imul(t^(t>>>7),t|61);return((t^(t>>>14))>>>0)/4294967296};
-const g=()=>Math.sqrt(-2*Math.log(r()||1e-9))*Math.cos(2*Math.PI*r());
-const NOISE=0.09,LEN=0.11,SIG=0.5,K=3,GRID=160,RANGE=1.15,W=1200,H=216,padX=24,padY=18;
-const truth=x=>0.42*Math.sin(2*Math.PI*1.1*x+1.3)+0.22*Math.sin(2*Math.PI*2.3*x+4.1)+0.1*Math.sin(2*Math.PI*3.7*x+2.2);
-const gap=0.62;const pts=[];
-while(pts.length<56){let x=r();const d=Math.abs(x-gap);if(r()>1-0.85*Math.exp(-d*d/0.012))continue;const o=r()<0.06;pts.push({x,y:truth(x)+(o?(r()<0.5?-1:1)*(0.5+r()*0.3):g()*NOISE),out:false});}
-const k=(p,q)=>{const d=(p-q)/LEN;return SIG*Math.exp(-0.5*d*d)};
-function fit(P){const n=P.length,L=Array.from({length:n},()=>new Float64Array(n));
- for(let i=0;i<n;i++)for(let j=0;j<=i;j++)L[i][j]=k(P[i].x,P[j].x)+(i===j?NOISE*NOISE+1e-8:0);
- for(let i=0;i<n;i++)for(let j=0;j<=i;j++){let s=L[i][j];for(let m=0;m<j;m++)s-=L[i][m]*L[j][m];L[i][j]=i===j?Math.sqrt(s):s/L[j][j];}
- const inv=Array.from({length:n},()=>new Float64Array(n));
- for(let c=0;c<n;c++){const col=new Float64Array(n);for(let i=0;i<n;i++){let s=i===c?1:0;for(let m=0;m<i;m++)s-=L[i][m]*col[m];col[i]=s/L[i][i];}
-  for(let i=n-1;i>=0;i--){let s=col[i];for(let m=i+1;m<n;m++)s-=L[m][i]*col[m];col[i]=s/L[i][i];}for(let i=0;i<n;i++)inv[i][c]=col[i];}
- const al=P.map((_,i)=>P.reduce((s,q,j)=>s+inv[i][j]*q.y,0));
- return{al,inv,loo:P.map((_,i)=>Math.abs(al[i]/inv[i][i])/Math.sqrt(1/inv[i][i]))};}
-let m=fit(pts);pts.forEach((p,i)=>p.out=m.loo[i]>K);const used=pts.filter(p=>!p.out);m=fit(used);
-const mu=[],sd=[];for(let gi=0;gi<GRID;gi++){const x=gi/(GRID-1);const ks=used.map(p=>k(x,p.x));mu.push(ks.reduce((s,v,i)=>s+v*m.al[i],0));let v=SIG;for(let i=0;i<used.length;i++){let s=0;for(let j=0;j<used.length;j++)s+=m.inv[i][j]*ks[j];v-=ks[i]*s;}sd.push(Math.sqrt(Math.max(v,1e-9)));}
-const X=x=>padX+x*(W-2*padX),Y=v=>H/2-v/RANGE*(H/2-padY);
-const band=z=>mu.map((v,i)=>(i?'L':'M')+X(i/(GRID-1)).toFixed(1)+' '+Y(v+z*sd[i]).toFixed(1)).join(' ')+mu.map((v,i)=>{const j=GRID-1-i;return 'L'+X(j/(GRID-1)).toFixed(1)+' '+Y(mu[j]-z*sd[j]).toFixed(1)}).join(' ')+'Z';
-let out=`<path d="${band(2)}" fill="rgba(26,28,26,0.06)"/><path d="${band(1)}" fill="rgba(26,28,26,0.06)"/>`;
-out+=`<path d="${mu.map((v,i)=>(i?'L':'M')+X(i/(GRID-1)).toFixed(1)+' '+Y(v).toFixed(1)).join(' ')}" fill="none" stroke="#1a1c1a" stroke-width="2" stroke-linejoin="round"/>`;
-out+=pts.map(p=>`<circle cx="${X(p.x).toFixed(1)}" cy="${Y(p.y).toFixed(1)}" r="${p.out?4.5:3.5}" fill="${p.out?'#a3470a':'#1a1c1a'}"/>`).join('');
-document.getElementById('svg').innerHTML=out;
-</script></body></html>
+<div class="strich"></div>
+</body></html>

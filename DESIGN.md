@@ -290,3 +290,34 @@ packender werden, die Texte darunter kürzer.
 - **Texte.** Je Motiv ein Satz plus „Synthetisch, gerechnet lokal im Browser.“
 - **Veröffentlichungen** haben eine eigene Unterseite, nach Jahr, mit den
   Jahren als Skala in der Achsenspalte; die Startseite behält drei.
+
+## Fünfte Runde: kühler, voller, mit Fotos
+
+Rückmeldung: Palette zu erdig, Animationen sollen die Fläche füllen, neue Fotos.
+
+**Neue Farben.** Papier wird kühles Weiß, Graphit und Blei bekommen einen
+Blaustich, die Signalfarbe wechselt von Bernstein zu Türkis. Die Rolle bleibt:
+Türkis nur für das, was nicht passt (Ausreißer, verfehlte Vorhersage,
+Außenseiter) und für Platzhalter.
+
+| Name    | Hell      | Dunkel    | Kontrast hell / dunkel |
+|---------|-----------|-----------|------------------------|
+| Papier  | `#F4F6F7` | `#0F1316` | Fläche                 |
+| Graphit | `#15191D` | `#E6EAEE` | 16,3 : 1 / 15,4 : 1    |
+| Blei    | `#58646E` | `#98A4AE` | 5,6 : 1 / 7,3 : 1      |
+| Raster  | `#D3DAE0` | `#262D33` | Hairlines              |
+| Türkis  | `#087A80` | `#35D0C4` | 4,7 : 1 / 9,8 : 1      |
+
+Im Code heißt der Token `--signal`, damit ein Farbwechsel nicht wieder
+Namen ändert. Alle drei Motive, Favicon und OG-Bild folgen den Tokens.
+
+**Volle Fläche.** Der Kopf ist höher (54 vh). Das Modell nutzt die ganze
+Höhe (größere Amplitude der verborgenen Kurve, 24 Kurven im Fächer), die
+Vorhersage die ganze Höhe und rechts ein Drittel für den Schmetterling, der
+Schwarm hat jetzt einen Platz, der langsam über die ganze Fläche wandert,
+und mehr Individuen je Fläche.
+
+**Fotos.** Porträt im Kopf (neu, 4:5, heller Hintergrund), ein breites Bild
+unter „Über mich“ über beide Spalten, ein quadratischer Ausschnitt des
+sitzenden Bilds bei „Kontakt“. Das OG-Bild nutzt das breite Foto, der Text
+steht im freien Raum rechts.
