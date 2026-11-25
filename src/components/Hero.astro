@@ -4,9 +4,17 @@
 <section class="hero" aria-labelledby="name">
   <div class="row hero-head">
     <div class="axis">
-      <div class="portrait" role="img" aria-label="Porträt, Platzhalter">
-        <span class="todo">Porträt folgt</span>
-      </div>
+      <img
+        class="portrait"
+        src="/portrait-320.jpg"
+        srcset="/portrait-320.jpg 320w, /portrait-640.jpg 640w"
+        sizes="(max-width: 900px) 5.5rem, 9rem"
+        width="640"
+        height="800"
+        alt="Porträt von Robin Hirt"
+        fetchpriority="high"
+        decoding="async"
+      />
     </div>
     <div class="content ident">
       <h1 id="name">Dr.-Ing. Robin Hirt</h1>
@@ -23,22 +31,29 @@
       data-signal
       tabindex="0"
       role="img"
-      aria-label="Synthetisches Messsignal mit laufender Abweichungserkennung. Mit Maus, Finger oder Leertaste lässt sich die Spur stören."
+      aria-label="Drei synthetische Messkanäle (Vibration, Temperatur, Strom) mit laufender Abweichungserkennung"
+      aria-describedby="signal-hilfe"
     ></canvas>
+    <p id="signal-hilfe" class="visually-hidden">
+      Mit Maus oder Finger lässt sich jeder Kanal stören. Tastatur: Ziffern 1 bis 3 wählen den
+      Kanal, Leertaste oder Pfeil nach oben stoßen ihn an, Pfeil nach unten nach unten.
+    </p>
   </div>
 
   <div class="row readout">
     <div class="axis"><p class="mono">Signal</p></div>
     <div class="content">
       <p class="mono werte">
-        <span>Wert <b data-ro="value">–</b></span>
-        <span>Mittel <b data-ro="mean">–</b></span>
-        <span>Band <b data-ro="band">–</b></span>
+        <span>Vibration <b data-ro="v0">–</b></span>
+        <span>Temperatur <b data-ro="v1">–</b></span>
+        <span>Strom <b data-ro="v2">–</b></span>
         <span>Abweichungen <b data-ro="events">0</b></span>
       </p>
+      <ol class="mono protokoll" data-ro="log" aria-label="Protokoll der letzten Abweichungen"></ol>
       <p class="hinweis">
-        Synthetisches Signal mit Rauschen, Drift und Ausreißern. Die Erkennung, ein gleitender
-        Mittelwert mit Toleranzband, läuft lokal im Browser. Maus oder Finger stören die Spur.
+        Synthetische Signale mit Rauschen, Drift und Ausreißern, die Kanäle sind gekoppelt. Die
+        Erkennung, ein gleitender Mittelwert mit Toleranzband je Kanal, läuft lokal im Browser.
+        Maus oder Finger stören einen Kanal; die anderen reagieren mit Verzögerung.
       </p>
     </div>
   </div>
@@ -55,17 +70,11 @@
     align-self: end;
   }
   .portrait {
-    aspect-ratio: 4 / 5;
     width: 100%;
     max-width: 9rem;
-    border: 1px dashed var(--bernstein);
-    display: grid;
-    place-items: end start;
-    padding: 0.6rem;
-    font-size: var(--s-1);
-  }
-  .portrait .todo {
-    border: 0;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
   }
   h1 {
     font-size: var(--s2);
@@ -90,7 +99,7 @@
   }
   canvas {
     width: 100%;
-    height: clamp(220px, 38vh, 420px);
+    height: clamp(330px, 52vh, 560px);
     touch-action: pan-y;
     cursor: crosshair;
   }
@@ -110,10 +119,10 @@
     font-weight: 500;
     color: var(--graphit);
     display: inline-block;
-    min-width: 3.4ch;
+    min-width: 5.2ch;
   }
   .hinweis {
-    margin-top: 0.7rem;
+    margin-top: 0.9rem;
     color: var(--blei);
     font-size: var(--s0);
   }
@@ -143,12 +152,16 @@
   const canvas = document.querySelector<HTMLCanvasElement>('[data-signal]');
   const ro = (n: string) => document.querySelector<HTMLElement>(`[data-ro="${n}"]`);
   if (canvas) {
-    mountSignal(canvas, { value: ro('value'), mean: ro('mean'), band: ro('band'), events: ro('events') });
+    mountSignal(canvas, {
+      values: [ro('v0'), ro('v1'), ro('v2')],
+      events: ro('events'),
+      log: ro('log'),
+    });
     if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
       const h = document.querySelector('.hinweis');
       if (h)
         h.textContent =
-          'Synthetisches Signal als Standbild, da reduzierte Bewegung eingestellt ist. Die Erkennung, ein gleitender Mittelwert mit Toleranzband, lief lokal im Browser.';
+          'Synthetische Signale als Standbild, da reduzierte Bewegung eingestellt ist. Die Erkennung, ein gleitender Mittelwert mit Toleranzband je Kanal, lief lokal im Browser.';
     }
   }
 </script>
