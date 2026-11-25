@@ -9,14 +9,14 @@
 import { hint, mulberry32, readColors, readout, runLoop, setupCanvas, stillImage, MONO, type Colors, type Rng, type UI, type Unmount } from './ui';
 
 const KMAX = 5;
-const SEE = 34; // Sichtweite
-const APART = 10; // Mindestabstand
+const SEE = 44; // Sichtweite
+const APART = 14; // Mindestabstand
 const NEIGHBORS = 14; // so viele Nachbarn zählen (topologisch, wie bei Staren)
 const OUT_Z = 2.8;
 const MAX_N = 2400;
 
 export const HINWEIS_SCHWARM =
-  'Tausende Punkte, drei Regeln, kein Plan: Angst läuft als Welle durch den Schwarm, Gruppen entstehen von selbst, ein Clustering findet sie. Maus jagt.';
+  'Hunderte Tiere, drei Regeln, kein Plan: Angst läuft als Welle durch den Schwarm, Gruppen entstehen von selbst, ein Clustering findet sie. Maus jagt.';
 
 function rgba(hex: string, a: number): string {
   const h = hex.replace('#', '');
@@ -34,7 +34,7 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
   const rng: Rng = live ? Math.random : mulberry32(2018);
   const set = readout(ui, ['Individuen', 'Gruppen', 'Außenseiter', 'Rechenzeit']);
   hint(ui, (live ? HINWEIS_SCHWARM : 'Standbild bei reduzierter Bewegung: ' + HINWEIS_SCHWARM) + ' Synthetisch, gerechnet lokal im Browser.');
-  canvas.setAttribute('aria-label', 'Ein Schwarm aus tausenden Punkten bewegt sich wie Stare; ein Clustering findet live die Gruppen und umreißt sie');
+  canvas.setAttribute('aria-label', 'Ein Schwarm aus hunderten Tieren bewegt sich wie Stare; ein Clustering findet live die Gruppen und umreißt sie');
 
   let colors: Colors = readColors(canvas);
   let W = 0;
@@ -63,7 +63,7 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
 
   function seed() {
     seeded = true;
-    N = Math.max(800, Math.min(MAX_N, Math.round((W * H) / 300)));
+    N = Math.max(500, Math.min(MAX_N, Math.round((W * H) / 620)));
     for (let i = 0; i < N; i++) {
       const g = i % 3;
       px[i] = W * (0.22 + 0.28 * g) + (rng() - 0.5) * W * 0.14;
@@ -342,7 +342,7 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
         const dx = px[i] - cx;
         const dy = py[i] - cy;
         const d = Math.hypot(dx, dy) || 1;
-        return [px[i] + (dx / d) * 10, py[i] + (dy / d) * 10];
+        return [px[i] + (dx / d) * 22, py[i] + (dy / d) * 22];
       });
       smoothHulls.push(smooth(padded, 3));
     }
@@ -356,40 +356,45 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
       c.clearRect(0, 0, W, H);
       needClear = false;
     } else {
-      c.fillStyle = rgba(colors.papier, 0.3);
+      c.fillStyle = rgba(colors.papier, 0.38);
       c.fillRect(0, 0, W, H);
     }
     c.font = MONO;
     c.textBaseline = 'middle';
-    // Hüllen nur als Hairline, damit das Nachleuchten sie nicht verschmiert
+    // Hüllen als große, weiche Flächen
     c.lineWidth = 1;
-    c.setLineDash([2, 4]);
     for (let g = 0; g < smoothHulls.length; g++) {
       const h = smoothHulls[g];
       if (h.length < 3) continue;
       c.beginPath();
       h.forEach((p, q) => (q ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])));
       c.closePath();
+      c.fillStyle = colors.band;
+      c.fill();
       c.strokeStyle = colors.blei;
-      c.globalAlpha = 0.5;
+      c.globalAlpha = 0.45;
       c.stroke();
       c.globalAlpha = 1;
     }
-    c.setLineDash([]);
-    // Individuen: kleine Punkte, Dichte entsteht durch Überlagerung
-    const dot = 1.7;
-    c.fillStyle = colors.graphit;
-    c.globalAlpha = 0.85;
-    for (let i = 0; i < N; i++) {
-      if (outlier[i]) continue;
-      c.fillRect(px[i] - dot / 2, py[i] - dot / 2, dot, dot);
+    // Individuen: Striche in Flugrichtung, länger bei Tempo
+    c.lineCap = 'round';
+    for (const want of [0, 1]) {
+      c.strokeStyle = want ? colors.signal : colors.graphit;
+      c.lineWidth = want ? 3 : 2.4;
+      c.globalAlpha = want ? 1 : 0.9;
+      c.beginPath();
+      for (let i = 0; i < N; i++) {
+        if (outlier[i] !== want) continue;
+        const sp = Math.hypot(vx[i], vy[i]) || 1;
+        const len = 3 + Math.min(7, sp / 22);
+        const ux = (vx[i] / sp) * len;
+        const uy = (vy[i] / sp) * len;
+        c.moveTo(px[i] - ux, py[i] - uy);
+        c.lineTo(px[i] + ux, py[i] + uy);
+      }
+      c.stroke();
     }
-    c.fillStyle = colors.signal;
     c.globalAlpha = 1;
-    for (let i = 0; i < N; i++) {
-      if (!outlier[i]) continue;
-      c.fillRect(px[i] - 1.5, py[i] - 1.5, 3, 3);
-    }
     // Beschriftung der Gruppen
     c.fillStyle = colors.blei;
     c.textAlign = 'left';

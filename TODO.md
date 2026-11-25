@@ -7,10 +7,11 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 - [ ] Domain eintragen: `site` in `astro.config.mjs` (steht auf `https://example.invalid`).
       Davon hängen Canonical-Link, Open-Graph-URL und das OG-Bild ab.
 - [ ] E-Mail-Adresse im Abschnitt Kontakt (`src/pages/index.astro`).
-- [x] Porträt im Kopf: `public/portrait-640.jpg` aus dem gelieferten Bild 1 (4:5).
-- [x] Breites Bild bei „Über mich“: `public/ueber-mich-1600.jpg` aus Bild 3.
-- [x] Bild bei „Kontakt“: `public/kontakt-900.jpg`, quadratischer Ausschnitt aus Bild 2.
-- [x] OG-Bild: Bild 3 mit Text im freien Raum (`tools/og.html`, `public/og-foto.jpg`).
+- [x] Kopf: `public/buehne-1536.jpg` (sitzend, Schwarzweiß) als Bühne.
+- [x] „Über mich“: `public/ueber-1536.jpg` (Profil, Blick nach rechts) als Bühne.
+- [x] OG-Bild aus demselben Foto wie der Kopf (`tools/og.html`, `public/og-foto.jpg`).
+- [ ] Die Originale sind 1536 px breit; für sehr große Bildschirme ein Export
+      mit 2400 px nachliefern (gleiche Bilder, nur größer).
 - [ ] Bühnenfoto: im Drive nicht gefunden. Durchsucht: Marketing-Ablage (Hannover-Messe-
       Ordner 2020/2021/2024, „Vortrag Industrial Transformation Stage“, Handelsblatt
       KI Summit), Admin „20240425 Messe_“, Dateinamen mit Bühne/Vortrag/Keynote/Stage.

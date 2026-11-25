@@ -2,28 +2,26 @@
 ---
 
 <section class="hero" aria-labelledby="name">
-  <div class="row hero-head">
-    <div class="axis">
-      <img
-        class="portrait"
-        src="/portrait-320.jpg"
-        srcset="/portrait-320.jpg 320w, /portrait-640.jpg 640w"
-        sizes="(max-width: 900px) 5.5rem, 9rem"
-        width="640"
-        height="800"
-        alt="Porträt von Robin Hirt, dunkler Pullover vor hellem Hintergrund"
-        fetchpriority="high"
-        decoding="async"
-      />
-    </div>
-    <div class="content ident">
+  <div class="buehne">
+    <img
+      class="buehne-foto"
+      src="/buehne-1200.jpg"
+      srcset="/buehne-1200.jpg 1200w, /buehne-1536.jpg 1536w"
+      sizes="100vw"
+      width="1536"
+      height="1024"
+      alt="Robin Hirt sitzt auf einem Hocker und blickt in die Kamera, Schwarzweißfoto"
+      fetchpriority="high"
+      decoding="async"
+    />
+    <div class="buehne-text">
       <h1 id="name">Dr.-Ing. Robin Hirt</h1>
       <p class="mono rolle">Gründer von prenode · Karlsruhe</p>
+      <p class="kernsatz">
+        Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb
+        funktionieren muss.
+      </p>
     </div>
-    <p class="kernsatz">
-      Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb
-      funktionieren muss.
-    </p>
   </div>
 
   <div class="signal">
@@ -53,8 +51,8 @@
         <span>Rechenzeit <b>–</b></span>
       </p>
       <p class="hinweis" data-ro="hinweis">
-        Ein Gauß-Prozess lernt live eine verborgene Kurve; der Fächer zeigt, was er für möglich
-        hält, Türkis, was nicht passt. Klick setzt Punkte. Synthetisch, gerechnet lokal im
+        Ein Gauß-Prozess lernt live eine verborgene Kurve; das Band ist seine Unsicherheit,
+        Türkis, was nicht passt. Klick setzt Punkte. Synthetisch, gerechnet lokal im
         Browser.
       </p>
     </div>
@@ -62,21 +60,36 @@
 </section>
 
 <style>
-  .hero-head {
-    padding-top: clamp(1.5rem, 6vh, 4rem);
-    padding-bottom: clamp(1.5rem, 4vh, 2.5rem);
-    row-gap: 1.6rem;
+  /* Die Bühne: Foto über die volle Breite, der Kernsatz im freien Raum links */
+  .buehne {
+    position: relative;
+    height: clamp(520px, 80vh, 860px);
+    overflow: hidden;
+    background: var(--papier);
   }
-  .hero-head .axis {
-    grid-row: 1 / 3;
-    align-self: end;
-  }
-  .portrait {
-    width: 100%;
-    max-width: 9rem;
-    height: auto;
-    aspect-ratio: 4 / 5;
+  .buehne-foto {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 112%; /* etwas breiter, damit die Person weiter rechts sitzt */
+    height: 100%;
     object-fit: cover;
+    object-position: 50% 40%;
+    filter: grayscale(1);
+  }
+  :root[data-theme='dark'] .buehne-foto {
+    filter: grayscale(1) brightness(0.42) contrast(1.15);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .buehne-foto {
+      filter: grayscale(1) brightness(0.42) contrast(1.15);
+    }
+  }
+  .buehne-text {
+    position: absolute;
+    left: var(--rand);
+    bottom: clamp(2rem, 7vh, 4.5rem);
+    max-width: min(40vw, 32rem);
   }
   h1 {
     font-size: var(--s2);
@@ -85,15 +98,32 @@
   }
   .rolle {
     margin-top: 0.3rem;
+    color: var(--graphit);
+    opacity: 0.8;
   }
   .kernsatz {
-    grid-column: 2;
-    font-size: clamp(1.75rem, 1.1rem + 2.6vw, 3rem);
-    line-height: 1.12;
+    margin-top: 1.4rem;
+    font-size: clamp(1.6rem, 0.8rem + 2.2vw, 2.8rem);
+    line-height: 1.1;
     letter-spacing: -0.018em;
     font-weight: 500;
-    max-width: 24ch;
     text-wrap: balance;
+  }
+  @media (max-width: 760px) {
+    .buehne {
+      height: auto;
+    }
+    .buehne-foto {
+      position: static;
+      width: 100%;
+      height: clamp(300px, 56vh, 480px);
+      object-position: 60% 30%;
+    }
+    .buehne-text {
+      position: static;
+      max-width: none;
+      padding: 1.4rem var(--rand) 2rem;
+    }
   }
   .signal {
     border-top: var(--hairline) solid var(--raster);
@@ -101,7 +131,7 @@
   }
   canvas {
     width: 100%;
-    height: clamp(300px, 54vh, 600px);
+    height: clamp(300px, 50vh, 560px);
     touch-action: pan-y;
     cursor: crosshair;
   }
@@ -133,25 +163,7 @@
     margin-top: 0.3rem;
   }
   @media (max-width: 900px) {
-    .hero-head {
-      grid-template-columns: 5.5rem minmax(0, 1fr);
-      column-gap: 1.1rem;
-      row-gap: 1.4rem;
-    }
-    .hero-head .axis {
-      grid-row: 1;
-      align-self: center;
-    }
-    .ident {
-      grid-column: 2;
-      align-self: center;
-    }
-    .kernsatz {
-      grid-column: 1 / -1;
-      margin-top: 0.3rem;
-    }
-  }
-</style>
+  </style>
 
 <script>
   import type { UI, Unmount } from '../scripts/ui';

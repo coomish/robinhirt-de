@@ -121,44 +121,30 @@ const jsonLd = {
       </div>
     </section>
 
-    <section class="row section" id="ueber-mich" aria-labelledby="h-ueber">
-      <div class="axis"><h2 id="h-ueber">Über mich</h2></div>
-      <div class="content">
+    <section class="ueber" id="ueber-mich" aria-labelledby="h-ueber">
+      <img
+        class="ueber-foto"
+        src="/ueber-1200.jpg"
+        srcset="/ueber-1200.jpg 1200w, /ueber-1536.jpg 1536w"
+        sizes="100vw"
+        width="1536"
+        height="1024"
+        alt="Robin Hirt im Profil, Blick nach rechts, Schwarzweißfoto"
+        loading="lazy"
+        decoding="async"
+      />
+      <div class="ueber-text">
+        <h2 id="h-ueber" class="mono">Über mich</h2>
         <p>
           Ich bin Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die
           im Betrieb funktionieren muss und nicht nur in der Demo.
         </p>
         <p>Ich lebe in Karlsruhe, laufe viel und trainiere Karate.</p>
       </div>
-      <figure class="breit">
-        <img
-          src="/ueber-mich-900.jpg"
-          srcset="/ueber-mich-900.jpg 900w, /ueber-mich-1600.jpg 1600w"
-          sizes="(max-width: 900px) 100vw, 56rem"
-          width="1600"
-          height="900"
-          alt="Robin Hirt vor einer hellen Wand, Blick in die Kamera"
-          loading="lazy"
-          decoding="async"
-        />
-      </figure>
     </section>
 
     <section class="row section" id="kontakt" aria-labelledby="h-kontakt">
-      <div class="axis">
-        <h2 id="h-kontakt">Kontakt</h2>
-        <img
-          class="kontakt-foto"
-          src="/kontakt-450.jpg"
-          srcset="/kontakt-450.jpg 450w, /kontakt-900.jpg 900w"
-          sizes="(max-width: 900px) 7rem, 9rem"
-          width="900"
-          height="900"
-          alt="Robin Hirt, sitzend, lächelnd"
-          loading="lazy"
-          decoding="async"
-        />
-      </div>
+      <div class="axis"><h2 id="h-kontakt">Kontakt</h2></div>
       <div class="content">
         <ul class="list">
           <li><span class="mono">E-Mail</span><span><span class="todo">Adresse folgt</span></span></li>
@@ -173,25 +159,68 @@ const jsonLd = {
 </Base>
 
 <style>
-  .breit {
-    grid-column: 1 / -1;
-    margin-top: 1.4rem;
+  /* Über mich: Foto über die volle Breite, Text im freien Raum rechts */
+  .ueber {
+    position: relative;
+    height: clamp(460px, 68vh, 760px);
+    overflow: hidden;
+    border-top: var(--hairline) solid var(--raster);
   }
-  .breit img {
+  .ueber-foto {
+    position: absolute;
+    inset: 0;
     width: 100%;
-    max-width: 56rem;
-    height: auto;
+    height: 100%;
+    object-fit: cover;
+    object-position: 20% 35%;
+    filter: grayscale(1);
   }
-  .kontakt-foto {
-    width: 100%;
-    max-width: 9rem;
-    height: auto;
-    margin-top: 2.6rem;
+  :root[data-theme='dark'] .ueber-foto {
+    filter: grayscale(1) brightness(0.42) contrast(1.15);
   }
-  @media (max-width: 900px) {
-    .kontakt-foto {
-      max-width: 7rem;
-      margin-top: 0.6rem;
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .ueber-foto {
+      filter: grayscale(1) brightness(0.42) contrast(1.15);
+    }
+  }
+  .ueber-text {
+    position: absolute;
+    right: var(--rand);
+    top: 50%;
+    transform: translateY(-50%);
+    width: min(40vw, 30rem);
+  }
+  .ueber-text h2 {
+    font-size: var(--s-1);
+    font-weight: 500;
+    color: var(--graphit);
+    opacity: 0.8;
+    margin-bottom: 1.2rem;
+  }
+  .ueber-text p {
+    font-size: var(--s2);
+    line-height: 1.4;
+  }
+  .ueber-text p + p {
+    margin-top: 1rem;
+  }
+  @media (max-width: 760px) {
+    .ueber {
+      height: auto;
+    }
+    .ueber-foto {
+      position: static;
+      height: clamp(280px, 50vh, 440px);
+      object-position: 30% 30%;
+    }
+    .ueber-text {
+      position: static;
+      transform: none;
+      width: auto;
+      padding: 1.6rem var(--rand) 2.4rem;
+    }
+    .ueber-text p {
+      font-size: var(--s1);
     }
   }
   .video {

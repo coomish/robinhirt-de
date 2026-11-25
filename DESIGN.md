@@ -321,3 +321,24 @@ und mehr Individuen je Fläche.
 unter „Über mich“ über beide Spalten, ein quadratischer Ausschnitt des
 sitzenden Bilds bei „Kontakt“. Das OG-Bild nutzt das breite Foto, der Text
 steht im freien Raum rechts.
+
+## Sechste Runde: Fotos als Bühne
+
+Rückmeldung: Fotos als kleine Kacheln wirkten beiläufig, der Fächer im Modell
+war zu unruhig, der Schwarm soll größere Elemente haben.
+
+- **Kopf als Bühne.** Das sitzende Foto (Freiraum links) läuft in
+  Schwarzweiß über die volle Breite, 80 vh hoch. Name, Rolle und Kernsatz
+  stehen im Freiraum unten links; das Bild ist 112 % breit, damit die Person
+  rechts vom Text bleibt. Darunter das Motiv, 50 vh. Im Dunkelmodus wird das
+  Foto per Filter abgedunkelt, der Text bleibt derselbe Token.
+- **„Über mich“ als Bühne.** Das Profilfoto mit Blick nach rechts, der Text
+  steht im Freiraum rechts, vertikal mittig. Unter 760 px stapeln beide
+  Bühnen: Foto oben, Text darunter auf Papier.
+- **Nur zwei Fotos.** Die drei früheren Bilder sind entfernt; Porträt in der
+  Achsenspalte und Kontaktfoto entfallen. Schwarzweiß, weil Graphit auf Grau
+  mit der Palette eins wird und das Türkis der Motive darunter frei bleibt.
+- **Modell** zurück zum Band (±1 σ, ±2 σ) mit nur sechs sehr leisen
+  möglichen Kurven. **Schwarm** mit weniger, größeren Tieren (Striche, 2,4 px,
+  Länge nach Tempo) und gefüllten, weit gepolsterten Hüllen.
+- OG-Bild: dasselbe Schwarzweißfoto, Text links im Freiraum.

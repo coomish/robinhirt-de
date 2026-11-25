@@ -14,12 +14,12 @@ const NOISE = 0.09; // σ des Messrauschens
 const LENGTH = 0.11; // Längenskala des Kerns, in Breiten
 const SIGNAL = 0.5; // Signalvarianz des Kerns
 const GRID = 140; // Stützstellen der Vorhersage
-const SAMPLES = 24; // Kurven aus der Nachverteilung
+const SAMPLES = 6; // Kurven aus der Nachverteilung, sparsam
 const OUTLIER_Z = 3; // Ausreißer ab so vielen σ (Leave-one-out)
 const RANGE = 1.05;
 
 export const HINWEIS_MODELL =
-  'Ein Gauß-Prozess lernt live eine verborgene Kurve; der Fächer zeigt, was er für möglich hält, Türkis, was nicht passt. Klick setzt Punkte.';
+  'Ein Gauß-Prozess lernt live eine verborgene Kurve; das Band ist seine Unsicherheit, Türkis, was nicht passt. Klick setzt Punkte.';
 
 export interface Point {
   x: number;
@@ -286,18 +286,20 @@ export function mountModel(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
     c.stroke();
 
     if (gp.n > 0) {
-      // Band ±2σ, leicht
-      c.beginPath();
-      for (let g = 0; g < GRID; g++) c.lineTo(xOf(g / (GRID - 1)), yOf(gp.mu[g] + 2 * gp.sd[g]));
-      for (let g = GRID - 1; g >= 0; g--) c.lineTo(xOf(g / (GRID - 1)), yOf(gp.mu[g] - 2 * gp.sd[g]));
-      c.closePath();
-      c.fillStyle = colors.band;
-      c.fill();
-      // Fächer möglicher Kurven
+      // Band ±2σ und ±1σ
+      for (const z of [2, 1]) {
+        c.beginPath();
+        for (let g = 0; g < GRID; g++) c.lineTo(xOf(g / (GRID - 1)), yOf(gp.mu[g] + z * gp.sd[g]));
+        for (let g = GRID - 1; g >= 0; g--) c.lineTo(xOf(g / (GRID - 1)), yOf(gp.mu[g] - z * gp.sd[g]));
+        c.closePath();
+        c.fillStyle = colors.band;
+        c.fill();
+      }
+      // Wenige mögliche Kurven, sehr leise
       if (gp.haveSamples) {
         c.strokeStyle = colors.graphit;
-        c.lineWidth = 0.8;
-        c.globalAlpha = 0.22;
+        c.lineWidth = 0.9;
+        c.globalAlpha = 0.16;
         c.lineJoin = 'round';
         for (let s = 0; s < SAMPLES; s++) {
           c.beginPath();
