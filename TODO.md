@@ -48,10 +48,17 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 
 ## Vor der Veröffentlichung
 
-- [ ] Motiv wählen (siehe DESIGN.md, „Vergleich“), dann `src/pages/motive.astro`
-      löschen, den `?motiv=`-Umschalter in `src/components/Hero.astro` entfernen
-      und die beiden nicht gewählten Module aus `src/scripts/` nehmen.
-- [ ] OG-Bild zum gewählten Motiv rendern (`tools/og.html` zeigt das lernende Modell).
+- [ ] `src/pages/motive.astro` (Vergleichsseite) löschen; der Wechsel per Zufall
+      und „nächstes“ bleibt.
+- [ ] OG-Bild zeigt das lernende Modell; bei Bedarf zu einem anderen Motiv rendern.
+- [ ] Veröffentlichungen prüfen (`src/data/publikationen.ts`, aus Semantic Scholar,
+      Google Scholar war nur teilweise lesbar, dblp blockierte). Vier Einträge
+      ohne gesicherten Ort fehlen noch: „How to Learn from Others? A Research
+      Agenda on Transfer Machine Learning for Sales Forecasting“ (2019),
+      „Towards Service-oriented Cognitive Analytics for Smart Service Systems“
+      (2018), „How to Cope With Incomplete Prediction Input?…“ (2017), und der
+      Ort von „Cognition in the Era of Smart Service Systems“ (2018, hier als
+      ICIS angenommen). Bitte ergänzen oder bestätigen.
 
 ## Technisch
 

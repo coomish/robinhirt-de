@@ -41,7 +41,10 @@
   </div>
 
   <div class="row readout">
-    <div class="axis"><p class="mono">Modell</p></div>
+    <div class="axis">
+      <p class="mono">Motiv <span data-motiv-nr>–</span>/3</p>
+      <p class="mono"><a href="/?motiv=vorhersage" data-motiv-next>nächstes</a></p>
+    </div>
     <div class="content">
       <p class="mono werte" data-ro="werte">
         <span>Punkte <b>–</b></span>
@@ -50,11 +53,9 @@
         <span>Rechenzeit <b>–</b></span>
       </p>
       <p class="hinweis" data-ro="hinweis">
-        Die Punkte stammen aus einer verborgenen Kurve, verrauscht und mit gelegentlichen
-        Ausreißern. Ein Gauß-Prozess lernt die Kurve und zeigt seine Unsicherheit als Band,
-        breit, wo Daten fehlen. Ausreißer erkennt er daran, dass sie ohne sich selbst nicht
-        vorhersagbar wären. Alles rechnet lokal im Browser. Klick oder Finger setzt eigene
-        Punkte.
+        Ein Gauß-Prozess lernt live eine verborgene Kurve; der Fächer zeigt, was er für möglich
+        hält, Bernstein, was nicht passt. Klick setzt Punkte. Synthetisch, gerechnet lokal im
+        Browser.
       </p>
     </div>
   </div>
@@ -126,6 +127,10 @@
     margin-top: 0.9rem;
     color: var(--blei);
     font-size: var(--s0);
+    max-width: 60ch;
+  }
+  .axis p + p {
+    margin-top: 0.3rem;
   }
   @media (max-width: 900px) {
     .hero-head {
@@ -149,17 +154,42 @@
 </style>
 
 <script>
-  import { mountModel } from '../scripts/model';
+  import type { UI, Unmount } from '../scripts/ui';
   const canvas = document.querySelector<HTMLCanvasElement>('[data-signal]');
-  const ui = {
+  const ui: UI = {
     werte: document.querySelector<HTMLElement>('[data-ro="werte"]'),
     hinweis: document.querySelector<HTMLElement>('[data-ro="hinweis"]'),
   };
+  const nr = document.querySelector<HTMLElement>('[data-motiv-nr]');
+  const next = document.querySelector<HTMLAnchorElement>('[data-motiv-next]');
+  const MOTIVE = ['modell', 'vorhersage', 'schwarm'] as const;
+  type Motiv = (typeof MOTIVE)[number];
+  const loaders: Record<Motiv, () => Promise<(c: HTMLCanvasElement, u: UI) => Unmount>> = {
+    modell: () => import('../scripts/model').then((m) => m.mountModel),
+    vorhersage: () => import('../scripts/forecast').then((m) => m.mountForecast),
+    schwarm: () => import('../scripts/swarm').then((m) => m.mountSwarm),
+  };
   if (canvas) {
-    // Vergleich der Motive: ?motiv=vorhersage oder ?motiv=schwarm, sonst das Modell
-    const motiv = new URLSearchParams(location.search).get('motiv');
-    if (motiv === 'vorhersage') import('../scripts/forecast').then((m) => m.mountForecast(canvas, ui));
-    else if (motiv === 'schwarm') import('../scripts/swarm').then((m) => m.mountSwarm(canvas, ui));
-    else mountModel(canvas, ui);
+    // Jeder Besuch bekommt ein zufälliges Motiv; ?motiv= legt es fest, „nächstes“ wechselt
+    const wanted = new URLSearchParams(location.search).get('motiv') as Motiv | null;
+    let current: number = wanted && MOTIVE.includes(wanted) ? MOTIVE.indexOf(wanted) : Math.floor(Math.random() * MOTIVE.length);
+    let unmount: Unmount | null = null;
+    let busy = false;
+    async function show(i: number) {
+      if (busy) return;
+      busy = true;
+      current = (i + MOTIVE.length) % MOTIVE.length;
+      const mount = await loaders[MOTIVE[current]]();
+      unmount?.();
+      unmount = mount(canvas!, ui);
+      if (nr) nr.textContent = String(current + 1);
+      if (next) next.href = `/?motiv=${MOTIVE[(current + 1) % MOTIVE.length]}`;
+      busy = false;
+    }
+    show(current);
+    next?.addEventListener('click', (ev) => {
+      ev.preventDefault();
+      show(current + 1);
+    });
   }
 </script>

@@ -1,39 +1,34 @@
 /**
- * Ordnung im Schwarm. Zweihundert Punkte folgen drei einfachen Regeln:
- * Abstand halten, Richtung angleichen, zusammenbleiben. Daraus entstehen
- * Gruppen, ohne dass jemand sie plant. Ein Clustering (k-means, die Zahl der
- * Gruppen wird laufend aus den Daten gewählt) findet die Gruppen und umreißt
- * sie; wer weit von seiner Gruppe entfernt ist, wird Bernstein. Alles lokal.
+ * Ordnung im Schwarm. Vierhundert Punkte folgen drei einfachen Regeln:
+ * Abstand halten, Richtung angleichen, zusammenbleiben. Gruppen entstehen von
+ * selbst. Ein Clustering (k-means, die Zahl der Gruppen wird laufend aus den
+ * Daten gewählt) findet sie und legt eine weiche Hülle um jede; wer weit
+ * von seiner Gruppe entfernt ist, wird Bernstein. Schweife zeigen die Bewegung.
  */
-import { hint, mulberry32, readColors, readout, runLoop, setupCanvas, MONO, type Colors, type Rng, type UI } from './ui';
+import { hint, mulberry32, readColors, readout, runLoop, setupCanvas, stillImage, MONO, type Colors, type Rng, type UI, type Unmount } from './ui';
 
-const N = 260;
+const N = 400;
 const KMAX = 5;
-const SPEED = 70; // px/s
-const SEE = 60; // Sichtweite
-const APART = 15; // Mindestabstand
-const OUT_Z = 2.2; // Ausreißer ab so vielen Streuungen vom Gruppenmittel
+const SPEED = 75;
+const SEE = 56;
+const APART = 14;
+const OUT_Z = 2.2;
+const TRAIL = 9;
 
 export const HINWEIS_SCHWARM =
-  'Zweihundertsechzig Punkte folgen drei einfachen Regeln: Abstand halten, Richtung angleichen, zusammenbleiben. Gruppen entstehen von selbst. Ein Clustering (k-means) wählt laufend die Zahl der Gruppen aus den Daten, umreißt sie und markiert, wer nicht dazugehört. Alles rechnet lokal im Browser. Maus oder Finger verscheuchen den Schwarm.';
+  'Vierhundert Punkte, drei Regeln, kein Plan: Gruppen entstehen von selbst, ein Clustering findet sie und markiert Außenseiter. Maus verscheucht.';
 
-export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
+export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) return () => undefined;
+  const ac = new AbortController();
+  const signal = ac.signal;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const live = !reduced.matches;
   const rng: Rng = live ? Math.random : mulberry32(2018);
   const set = readout(ui, ['Individuen', 'Gruppen', 'Außenseiter', 'Rechenzeit']);
-  hint(
-    ui,
-    live
-      ? HINWEIS_SCHWARM
-      : 'Standbild, da reduzierte Bewegung eingestellt ist: ein Schwarm nach drei einfachen Regeln, Gruppen per k-means gefunden und umrissen, Außenseiter in Bernstein. Gerechnet lokal im Browser.',
-  );
-  canvas.setAttribute(
-    'aria-label',
-    'Ein Schwarm aus 260 Punkten folgt einfachen Regeln; ein Clustering findet live die Gruppen und umreißt sie',
-  );
+  hint(ui, (live ? HINWEIS_SCHWARM : 'Standbild bei reduzierter Bewegung: ' + HINWEIS_SCHWARM) + ' Synthetisch, gerechnet lokal im Browser.');
+  canvas.setAttribute('aria-label', 'Ein Schwarm aus 400 Punkten folgt einfachen Regeln; ein Clustering findet live die Gruppen und umreißt sie');
 
   let colors: Colors = readColors(canvas);
   let W = 0;
@@ -44,9 +39,13 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
   const vy = new Float32Array(N);
   const label = new Int8Array(N);
   const outlier = new Uint8Array(N);
+  const trail = new Float32Array(N * TRAIL * 2);
+  let trailHead = 0;
+  let trailN = 0;
   let k = 1;
   const centers = new Float32Array(KMAX * 2);
   const hulls: number[][] = [];
+  const members = new Int32Array(KMAX);
   let fitMs = 0;
   let pointer: { x: number; y: number } | null = null;
   let scare = 0;
@@ -58,8 +57,8 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
       seeded = true;
       for (let i = 0; i < N; i++) {
         const g = i % 3;
-        px[i] = W * (0.2 + 0.3 * g) + (rng() - 0.5) * W * 0.18;
-        py[i] = H * (0.3 + 0.4 * rng());
+        px[i] = W * (0.2 + 0.3 * g) + (rng() - 0.5) * W * 0.16;
+        py[i] = H * (0.25 + 0.5 * rng());
         const a = rng() * Math.PI * 2;
         vx[i] = Math.cos(a) * SPEED;
         vy[i] = Math.sin(a) * SPEED;
@@ -69,11 +68,30 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
         centers[c * 2] = px[i];
         centers[c * 2 + 1] = py[i];
       }
+      for (let kk = 1; kk <= KMAX; kk++) kept[kk].set(centers);
     }
   }
 
-  // ---- Die drei Regeln -----------------------------------------------------
+  // ---- Nachbarschaft über ein Gitter -----------------------------------------
+  const cellHead = new Int32Array(4096);
+  const next = new Int32Array(N);
+  let cols = 1;
+  let rows = 1;
+  function buildGrid() {
+    cols = Math.max(1, Math.ceil(W / SEE));
+    rows = Math.max(1, Math.ceil(H / SEE));
+    cellHead.fill(-1, 0, cols * rows);
+    for (let i = 0; i < N; i++) {
+      const cx = Math.min(cols - 1, Math.max(0, Math.floor(px[i] / SEE)));
+      const cy = Math.min(rows - 1, Math.max(0, Math.floor(py[i] / SEE)));
+      const cell = cy * cols + cx;
+      next[i] = cellHead[cell];
+      cellHead[cell] = i;
+    }
+  }
+
   function move(dt: number) {
+    buildGrid();
     for (let i = 0; i < N; i++) {
       let ax = 0;
       let ay = 0;
@@ -82,54 +100,60 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
       let hx = 0;
       let hy = 0;
       let n = 0;
-      for (let j = 0; j < N; j++) {
-        if (j === i) continue;
-        const dx = px[j] - px[i];
-        const dy = py[j] - py[i];
-        const d2 = dx * dx + dy * dy;
-        if (d2 > SEE * SEE) continue;
-        const d = Math.sqrt(d2) || 1e-3;
-        n++;
-        cx += px[j];
-        cy += py[j];
-        hx += vx[j];
-        hy += vy[j];
-        if (d < APART) {
-          ax -= (dx / d) * (APART - d) * 6;
-          ay -= (dy / d) * (APART - d) * 6;
+      const gx = Math.min(cols - 1, Math.max(0, Math.floor(px[i] / SEE)));
+      const gy = Math.min(rows - 1, Math.max(0, Math.floor(py[i] / SEE)));
+      for (let oy = -1; oy <= 1; oy++) {
+        for (let ox = -1; ox <= 1; ox++) {
+          const qx = gx + ox;
+          const qy = gy + oy;
+          if (qx < 0 || qy < 0 || qx >= cols || qy >= rows) continue;
+          for (let j = cellHead[qy * cols + qx]; j !== -1; j = next[j]) {
+            if (j === i) continue;
+            const dx = px[j] - px[i];
+            const dy = py[j] - py[i];
+            const d2 = dx * dx + dy * dy;
+            if (d2 > SEE * SEE) continue;
+            const d = Math.sqrt(d2) || 1e-3;
+            n++;
+            cx += px[j];
+            cy += py[j];
+            hx += vx[j];
+            hy += vy[j];
+            if (d < APART) {
+              ax -= (dx / d) * (APART - d) * 7;
+              ay -= (dy / d) * (APART - d) * 7;
+            }
+          }
         }
       }
       if (n) {
-        ax += (cx / n - px[i]) * 1.3; // zusammenbleiben
-        ay += (cy / n - py[i]) * 1.3;
-        ax += (hx / n - vx[i]) * 2.4; // Richtung angleichen
+        ax += (cx / n - px[i]) * 1.4;
+        ay += (cy / n - py[i]) * 1.4;
+        ax += (hx / n - vx[i]) * 2.4;
         ay += (hy / n - vy[i]) * 2.4;
       }
-      // sanfter Rand
       const m = 60;
       if (px[i] < m) ax += (m - px[i]) * 12;
       if (px[i] > W - m) ax -= (px[i] - (W - m)) * 12;
       if (py[i] < m) ay += (m - py[i]) * 12;
       if (py[i] > H - m) ay -= (py[i] - (H - m)) * 12;
-      // Zeiger verscheucht
       if (pointer) {
         const dx = px[i] - pointer.x;
         const dy = py[i] - pointer.y;
         const d2 = dx * dx + dy * dy;
-        const r = 90 + scare * 120;
+        const r = 100 + scare * 140;
         if (d2 < r * r) {
           const d = Math.sqrt(d2) || 1e-3;
-          ax += (dx / d) * (r - d) * 14;
-          ay += (dy / d) * (r - d) * 14;
+          ax += (dx / d) * (r - d) * 16;
+          ay += (dy / d) * (r - d) * 16;
         }
       }
-      // etwas Eigensinn
       ax += (rng() - 0.5) * 30;
       ay += (rng() - 0.5) * 30;
       vx[i] += ax * dt;
       vy[i] += ay * dt;
       const sp = Math.hypot(vx[i], vy[i]) || 1e-3;
-      const want = SPEED * (0.8 + 0.4 * ((i * 7919) % 13) / 13);
+      const want = SPEED * (0.8 + (0.4 * ((i * 7919) % 13)) / 13) * (1 + scare * 0.8);
       const f = sp > want ? want / sp : 1 + (want / sp - 1) * 0.1;
       vx[i] *= f;
       vy[i] *= f;
@@ -138,7 +162,16 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
       px[i] += vx[i] * dt;
       py[i] += vy[i] * dt;
     }
-    scare *= 0.9;
+    scare *= 0.92;
+  }
+
+  function record() {
+    for (let i = 0; i < N; i++) {
+      trail[(i * TRAIL + trailHead) * 2] = px[i];
+      trail[(i * TRAIL + trailHead) * 2 + 1] = py[i];
+    }
+    trailHead = (trailHead + 1) % TRAIL;
+    if (trailN < TRAIL) trailN++;
   }
 
   // ---- k-means mit Wahl der Gruppenzahl --------------------------------------
@@ -184,55 +217,68 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
     return inertia;
   }
 
+  /** Chaikin: Ecken abrunden */
+  function smooth(poly: number[][], rounds: number): number[][] {
+    let p = poly;
+    for (let r = 0; r < rounds; r++) {
+      const q: number[][] = [];
+      for (let i = 0; i < p.length; i++) {
+        const a = p[i];
+        const b = p[(i + 1) % p.length];
+        q.push([0.75 * a[0] + 0.25 * b[0], 0.75 * a[1] + 0.25 * b[1]]);
+        q.push([0.25 * a[0] + 0.75 * b[0], 0.25 * a[1] + 0.75 * b[1]]);
+      }
+      p = q;
+    }
+    return p;
+  }
+  let smoothHulls: number[][][] = [];
+
   function cluster() {
     const t0 = performance.now();
-    // Trägheit für k = 1 … KMAX, warm gestartet aus dem letzten Bild
     const inertia: number[] = [];
     for (let kk = 1; kk <= KMAX; kk++) {
       tmpCenters.set(kept[kk]);
       inertia[kk] = kmeans(kk, tmpCenters, tmpLabel, 3);
       kept[kk].set(tmpCenters);
     }
-    // Wahl: solange eine weitere Gruppe die Trägheit noch deutlich senkt
     let choose = 1;
     for (let kk = 1; kk < KMAX; kk++) {
       if (inertia[kk + 1] / inertia[kk] < 0.62) choose = kk + 1;
       else break;
     }
-    // Hysterese gegen Flackern
     if (Math.abs(choose - k) === 1 && rng() < 0.7) choose = k;
     k = choose;
     centers.set(kept[k]);
     kmeans(k, centers, label, 1);
     kept[k].set(centers);
-    // Außenseiter: weiter als OUT_Z Streuungen vom Gruppenmittel
     const spread = new Float64Array(k);
-    const cnt = new Int32Array(k);
+    members.fill(0);
     for (let i = 0; i < N; i++) {
       const c = label[i];
       const dx = px[i] - centers[c * 2];
       const dy = py[i] - centers[c * 2 + 1];
       spread[c] += dx * dx + dy * dy;
-      cnt[c]++;
+      members[c]++;
     }
-    for (let c = 0; c < k; c++) spread[c] = Math.sqrt(spread[c] / Math.max(1, cnt[c]));
+    for (let c = 0; c < k; c++) spread[c] = Math.sqrt(spread[c] / Math.max(1, members[c]));
     for (let i = 0; i < N; i++) {
       const c = label[i];
       const d = Math.hypot(px[i] - centers[c * 2], py[i] - centers[c * 2 + 1]);
       outlier[i] = d > OUT_Z * spread[c] ? 1 : 0;
     }
-    // Hüllen je Gruppe (Andrew)
     hulls.length = 0;
+    smoothHulls = [];
     for (let c = 0; c < k; c++) {
       const idx: number[] = [];
       for (let i = 0; i < N; i++) if (label[i] === c && !outlier[i]) idx.push(i);
       if (idx.length < 3) {
         hulls.push([]);
+        smoothHulls.push([]);
         continue;
       }
       idx.sort((a, b) => px[a] - px[b] || py[a] - py[b]);
-      const cross = (o: number, a: number, b: number) =>
-        (px[a] - px[o]) * (py[b] - py[o]) - (py[a] - py[o]) * (px[b] - px[o]);
+      const cross = (o: number, a: number, b: number) => (px[a] - px[o]) * (py[b] - py[o]) - (py[a] - py[o]) * (px[b] - px[o]);
       const lower: number[] = [];
       for (const i of idx) {
         while (lower.length >= 2 && cross(lower[lower.length - 2], lower[lower.length - 1], i) <= 0) lower.pop();
@@ -246,7 +292,18 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
       }
       lower.pop();
       upper.pop();
-      hulls.push(lower.concat(upper));
+      const hull = lower.concat(upper);
+      hulls.push(hull);
+      // Hülle etwas nach außen schieben, dann runden
+      const cx = centers[c * 2];
+      const cy = centers[c * 2 + 1];
+      const padded = hull.map((i) => {
+        const dx = px[i] - cx;
+        const dy = py[i] - cy;
+        const d = Math.hypot(dx, dy) || 1;
+        return [px[i] + (dx / d) * 14, py[i] + (dy / d) * 14];
+      });
+      smoothHulls.push(smooth(padded, 3));
     }
     fitMs = performance.now() - t0;
   }
@@ -256,21 +313,19 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
     c.clearRect(0, 0, W, H);
     c.font = MONO;
     c.textBaseline = 'middle';
-    // Hüllen
     c.lineWidth = 1;
-    for (let g = 0; g < hulls.length; g++) {
-      const h = hulls[g];
+    for (let g = 0; g < smoothHulls.length; g++) {
+      const h = smoothHulls[g];
       if (h.length < 3) continue;
       c.beginPath();
-      h.forEach((i, q) => (q ? c.lineTo(px[i], py[i]) : c.moveTo(px[i], py[i])));
+      h.forEach((p, q) => (q ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])));
       c.closePath();
       c.fillStyle = colors.band;
       c.fill();
       c.strokeStyle = colors.blei;
-      c.globalAlpha = 0.7;
+      c.globalAlpha = 0.55;
       c.stroke();
       c.globalAlpha = 1;
-      // Mittelpunkt als kleines Kreuz, Beschriftung
       const cx = centers[g * 2];
       const cy = centers[g * 2 + 1];
       c.strokeStyle = colors.blei;
@@ -282,21 +337,41 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
       c.stroke();
       c.fillStyle = colors.blei;
       c.textAlign = 'left';
-      let members = 0;
-      for (let i = 0; i < N; i++) if (label[i] === g) members++;
-      c.fillText(`Gruppe ${g + 1} · ${members}`, cx + 9, cy - 9);
+      c.fillText(`Gruppe ${g + 1} · ${members[g]}`, cx + 9, cy - 9);
     }
-    // Individuen als kurze Striche in Bewegungsrichtung
-    c.lineWidth = 1.6;
-    c.lineCap = 'round';
-    for (let i = 0; i < N; i++) {
-      const sp = Math.hypot(vx[i], vy[i]) || 1;
-      const ux = (vx[i] / sp) * 4;
-      const uy = (vy[i] / sp) * 4;
-      c.strokeStyle = outlier[i] ? colors.bernstein : colors.graphit;
+    // Schweife
+    if (trailN > 1) {
+      c.lineWidth = 1;
+      c.lineCap = 'round';
+      c.strokeStyle = colors.graphit;
+      c.globalAlpha = 0.16;
       c.beginPath();
-      c.moveTo(px[i] - ux, py[i] - uy);
-      c.lineTo(px[i] + ux, py[i] + uy);
+      for (let i = 0; i < N; i++) {
+        for (let s = 0; s < trailN; s++) {
+          const idx = (trailHead - trailN + s + TRAIL) % TRAIL;
+          const x = trail[(i * TRAIL + idx) * 2];
+          const y = trail[(i * TRAIL + idx) * 2 + 1];
+          if (s === 0) c.moveTo(x, y);
+          else c.lineTo(x, y);
+        }
+        c.lineTo(px[i], py[i]);
+      }
+      c.stroke();
+      c.globalAlpha = 1;
+    }
+    // Individuen als Striche in Bewegungsrichtung
+    c.lineWidth = 1.8;
+    for (const want of [0, 1]) {
+      c.strokeStyle = want ? colors.bernstein : colors.graphit;
+      c.beginPath();
+      for (let i = 0; i < N; i++) {
+        if (outlier[i] !== want) continue;
+        const sp = Math.hypot(vx[i], vy[i]) || 1;
+        const ux = (vx[i] / sp) * 4.5;
+        const uy = (vy[i] / sp) * 4.5;
+        c.moveTo(px[i] - ux, py[i] - uy);
+        c.lineTo(px[i] + ux, py[i] + uy);
+      }
       c.stroke();
     }
   }
@@ -311,24 +386,29 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
   }
 
   resize();
-  for (let s = 0; s < 120; s++) move(1 / 30); // Vorlauf, damit sich Gruppen gebildet haben
+  for (let s = 0; s < 150; s++) {
+    move(1 / 30);
+    if (s % 2 === 0) record();
+  }
   cluster();
   if (!live) {
     draw();
     updateReadout(0, true);
-    new ResizeObserver(() => {
-      resize();
-      draw();
-    }).observe(canvas);
-    return;
+    const stopStill = stillImage(canvas, resize, draw);
+    return () => {
+      stopStill();
+      ac.abort();
+    };
   }
 
   let sinceCluster = 0;
-  runLoop(
+  let frames = 0;
+  const stopLoop = runLoop(
     canvas,
     {
       frame(dt, now) {
         move(Math.min(dt, 1 / 30));
+        if (++frames % 2 === 0) record();
         sinceCluster += dt;
         if (sinceCluster > 0.1) {
           sinceCluster = 0;
@@ -343,31 +423,47 @@ export function mountSwarm(canvas: HTMLCanvasElement, ui: UI = {}) {
       },
     },
     reduced,
+    signal,
   );
 
   const local = (ev: PointerEvent) => {
     const r = canvas.getBoundingClientRect();
     return { x: ev.clientX - r.left, y: ev.clientY - r.top };
   };
-  canvas.addEventListener('pointermove', (ev) => {
-    if (ev.pointerType === 'mouse' || ev.buttons > 0) pointer = local(ev);
-  });
-  canvas.addEventListener('pointerdown', (ev) => {
-    pointer = local(ev);
-    scare = 1;
-  });
-  const release = () => {
-    pointer = null;
-  };
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
-  canvas.addEventListener('pointerleave', release);
-  canvas.addEventListener('keydown', (ev) => {
-    if (ev.key === ' ' || ev.key === 'Enter') {
-      ev.preventDefault();
-      pointer = { x: W / 2, y: H / 2 };
+  canvas.addEventListener(
+    'pointermove',
+    (ev) => {
+      if (ev.pointerType === 'mouse' || ev.buttons > 0) pointer = local(ev);
+    },
+    { signal },
+  );
+  canvas.addEventListener(
+    'pointerdown',
+    (ev) => {
+      pointer = local(ev);
       scare = 1;
-      setTimeout(() => (pointer = null), 400);
-    }
-  });
+    },
+    { signal },
+  );
+  const release = () => (pointer = null);
+  canvas.addEventListener('pointerup', release, { signal });
+  canvas.addEventListener('pointercancel', release, { signal });
+  canvas.addEventListener('pointerleave', release, { signal });
+  canvas.addEventListener(
+    'keydown',
+    (ev) => {
+      if (ev.key === ' ' || ev.key === 'Enter') {
+        ev.preventDefault();
+        pointer = { x: W / 2, y: H / 2 };
+        scare = 1;
+        setTimeout(() => (pointer = null), 400);
+      }
+    },
+    { signal },
+  );
+  return () => {
+    stopLoop();
+    ac.abort();
+    ctx.clearRect(0, 0, W, H);
+  };
 }

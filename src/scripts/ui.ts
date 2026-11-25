@@ -86,8 +86,11 @@ export interface Loop {
   recolor(): void;
 }
 
-/** Schleife mit Pause außerhalb des Sichtfelds, bei verstecktem Tab und reduzierter Bewegung */
-export function runLoop(canvas: HTMLCanvasElement, loop: Loop, reduced: MediaQueryList) {
+/**
+ * Schleife mit Pause außerhalb des Sichtfelds, bei verstecktem Tab und
+ * reduzierter Bewegung. Liefert eine Funktion, die alles wieder abbaut.
+ */
+export function runLoop(canvas: HTMLCanvasElement, loop: Loop, reduced: MediaQueryList, signal: AbortSignal): () => void {
   let last = 0;
   let raf = 0;
   let visible = true;
@@ -113,31 +116,49 @@ export function runLoop(canvas: HTMLCanvasElement, loop: Loop, reduced: MediaQue
     cancelAnimationFrame(raf);
   }
   start();
-  new IntersectionObserver(
+  const io = new IntersectionObserver(
     (entries) => {
       visible = entries.some((e) => e.isIntersecting);
       if (visible) start();
       else stop();
     },
     { threshold: 0.05 },
-  ).observe(canvas);
-  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
-  new ResizeObserver(() => {
+  );
+  io.observe(canvas);
+  document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()), { signal });
+  const ro = new ResizeObserver(() => {
     loop.resize();
     if (!running) loop.draw(performance.now());
-  }).observe(canvas);
+  });
+  ro.observe(canvas);
   const recolor = () => {
     loop.recolor();
     if (!running) loop.draw(performance.now());
   };
-  new MutationObserver(recolor).observe(document.documentElement, {
-    attributes: true,
-    attributeFilter: ['data-theme'],
-  });
-  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', recolor);
-  reduced.addEventListener('change', () => (reduced.matches ? stop() : start()));
+  const mo = new MutationObserver(recolor);
+  mo.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', recolor, { signal });
+  reduced.addEventListener('change', () => (reduced.matches ? stop() : start()), { signal });
   if (document.fonts?.load) document.fonts.load(MONO).catch(() => undefined);
+  return () => {
+    stop();
+    io.disconnect();
+    ro.disconnect();
+    mo.disconnect();
+  };
 }
+
+/** Standbild: zeichnet einmal und bei Größenänderung, liefert den Abbau */
+export function stillImage(canvas: HTMLCanvasElement, resize: () => void, draw: () => void): () => void {
+  const ro = new ResizeObserver(() => {
+    resize();
+    draw();
+  });
+  ro.observe(canvas);
+  return () => ro.disconnect();
+}
+
+export type Unmount = () => void;
 
 export function setupCanvas(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
   const rect = canvas.getBoundingClientRect();

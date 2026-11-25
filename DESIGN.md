@@ -261,3 +261,29 @@ unverändert:
 Alle drei teilen `src/scripts/ui.ts` (Schleife mit Pause, Anzeige, Farben)
 und dieselbe Sprache: Papier, Graphit, Band, Bernstein nur für das, was
 nicht passt.
+
+## Vierte Runde: alle drei bleiben, dichter, kürzer
+
+Rückmeldung: alle drei Motive gefallen, sie sollen wechseln und visuell
+packender werden, die Texte darunter kürzer.
+
+- **Wechsel.** Jeder Besuch bekommt per Zufall eines der drei Motive. In der
+  Achsenspalte steht „Motiv 2/3“ und ein Link „nächstes“, der das Motiv an
+  Ort und Stelle austauscht (jedes Modul baut sich sauber ab: Schleife,
+  Beobachter, Zeiger). `?motiv=` legt eines fest, der Link trägt die Adresse
+  des nächsten als Fallback ohne JavaScript.
+- **Modell.** Statt eines Bands ein Fächer aus 16 Kurven, die der
+  Gauß-Prozess für möglich hält: Stichproben aus der Nachverteilung (Cholesky
+  der 140×140-Kovarianz, feste Zufallszahlen, deshalb verformen sich die
+  Kurven stetig statt zu springen).
+- **Vorhersage.** Rechts zeichnet das System seinen Schmetterling (x–z-
+  Projektion der letzten 2400 Zustände, hinten blass), der aktuelle Zustand
+  läuft darauf mit und wird Bernstein, wenn die Vorhersage gerade verfehlt.
+  Vor dem Jetzt ein Fächer aus fünf autoregressiven Modellen (Ordnung 8 bis
+  32); das mittlere trägt den Kegel und den Schatten.
+- **Schwarm.** 400 Individuen mit Gitternachbarschaft, Schweife aus den
+  letzten neun Positionen, Hüllen nach außen gepolstert und nach Chaikin
+  gerundet, Flucht vor dem Zeiger mit Tempo.
+- **Texte.** Je Motiv ein Satz plus „Synthetisch, gerechnet lokal im Browser.“
+- **Veröffentlichungen** haben eine eigene Unterseite, nach Jahr, mit den
+  Jahren als Skala in der Achsenspalte; die Startseite behält drei.

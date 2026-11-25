@@ -1,31 +1,32 @@
 /**
- * Vorhersage gegen Wirklichkeit. Ein chaotisches System (Lorenz, das Modell
- * hinter dem Schmetterlingseffekt) läuft als Spur. Ein autoregressives Modell
- * lernt laufend aus den letzten Sekunden und sagt die nächsten 0,5 s voraus.
- * Die Vorhersage läuft als Schatten vor der Spur her; wo die Wirklichkeit sie
- * verfehlt, wird die Lücke Bernstein. Der Fehler wächst mit dem Horizont, das
- * zeigt der Kegel vor dem Jetzt. Alles lokal im Browser.
+ * Vorhersage gegen Wirklichkeit. Ein chaotisches System (Lorenz) läuft als
+ * Spur; rechts zeichnet es seinen Schmetterling. Fünf autoregressive Modelle
+ * verschiedener Ordnung lernen laufend aus den letzten Sekunden und sagen
+ * 0,5 s voraus, als Fächer vor dem Jetzt. Gestrichelt läuft mit, was für
+ * jeden Moment vorhergesagt war; Bernstein, wo die Wirklichkeit es verfehlt.
  */
-import { gauss, hint, mulberry32, readColors, readout, runLoop, setupCanvas, fmt, MONO, type Colors, type Rng, type UI } from './ui';
+import { gauss, hint, mulberry32, readColors, readout, runLoop, setupCanvas, stillImage, fmt, MONO, type Colors, type Rng, type UI, type Unmount } from './ui';
 
 const RATE = 50;
 const DT = 1 / RATE;
-const HORIZON = 0.5; // Sekunden
+const HORIZON = 0.5;
 const HN = Math.round(HORIZON * RATE);
-const P = 16; // Ordnung des AR-Modells
-const FITWIN = 300; // Abtastwerte zum Anpassen (6 s)
+const ORDERS = [8, 12, 16, 24, 32];
+const WINDOWS = [200, 250, 300, 350, 400];
+const MAIN = 2;
 const FIT_EVERY = 5;
-const MAX_SECONDS = 16;
+const MAX_SECONDS = 14;
 const CAP = (MAX_SECONDS + HORIZON) * RATE + 8;
-const TOL = 0.12; // Toleranz, ab der eine Abweichung markiert wird
-const SCALE = 22; // Lorenz-x auf ±1
+const TOL = 0.12;
+const SCALE = 22;
+const TRAIL = 2400; // Zustände für den Schmetterling
 
 export const HINWEIS_VORHERSAGE =
-  'Die Spur ist ein chaotisches System (Lorenz), die Mathematik hinter dem Schmetterlingseffekt. Ein autoregressives Modell lernt laufend aus den letzten sechs Sekunden und sagt die nächsten 0,5 s voraus. Wo die Wirklichkeit die Vorhersage verfehlt, wird die Lücke Bernstein; der Kegel zeigt den erwarteten Fehler je Horizont. Alles lokal im Browser. Maus oder Finger ziehen die Spur.';
+  'Ein chaotisches System (Lorenz) läuft, fünf Modelle sagen 0,5 s voraus; Bernstein, wo die Wirklichkeit sie verfehlt. Maus zieht, Klick stößt an.';
 
 class Lorenz {
-  x = 1;
-  y = 1;
+  x: number;
+  y: number;
   z = 20;
   constructor(rng: Rng) {
     this.x = 1 + gauss(rng);
@@ -46,12 +47,14 @@ class Lorenz {
   }
 }
 
-/** Autoregression per kleinster Quadrate (Normalengleichungen, Cholesky) */
 class AR {
-  coef = new Float64Array(P + 1); // letzte Stelle: Achsenabschnitt
+  coef: Float64Array;
   ok = false;
-
+  constructor(readonly P: number) {
+    this.coef = new Float64Array(P + 1);
+  }
   fit(series: (k: number) => number, n: number): boolean {
+    const P = this.P;
     const M = P + 1;
     const A = new Float64Array(M * M);
     const b = new Float64Array(M);
@@ -67,8 +70,7 @@ class AR {
         for (let j = 0; j <= i; j++) A[i * M + j] += row[i] * row[j];
       }
     }
-    for (let i = 0; i < M; i++) A[i * M + i] += 1e-3 * rows; // Ridge
-    // Cholesky in A (unteres Dreieck)
+    for (let i = 0; i < M; i++) A[i * M + i] += 1e-3 * rows;
     for (let i = 0; i < M; i++) {
       for (let j = 0; j <= i; j++) {
         let s = A[i * M + j];
@@ -92,9 +94,8 @@ class AR {
     }
     return (this.ok = true);
   }
-
-  /** Sagt HN Schritte voraus; series(0) ist der neueste Wert, series(k) der k-t-letzte */
   forecast(series: (k: number) => number, out: Float32Array) {
+    const P = this.P;
     const hist = new Float64Array(P);
     for (let k = 0; k < P; k++) hist[k] = series(k);
     for (let h = 0; h < HN; h++) {
@@ -108,73 +109,75 @@ class AR {
   }
 }
 
-export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
+export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  if (!ctx) return () => undefined;
+  const ac = new AbortController();
+  const signal = ac.signal;
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   const live = !reduced.matches;
   const rng: Rng = live ? Math.random : mulberry32(2018);
   const set = readout(ui, ['Horizont', 'Fehler am Horizont', 'Verfehlt', 'Rechenzeit']);
-  hint(
-    ui,
-    live
-      ? HINWEIS_VORHERSAGE
-      : 'Standbild, da reduzierte Bewegung eingestellt ist: Ein chaotisches System (Lorenz) als Spur, davor die Vorhersage eines autoregressiven Modells; Bernstein, wo die Wirklichkeit sie verfehlte. Gerechnet lokal im Browser.',
-  );
-  canvas.setAttribute(
-    'aria-label',
-    'Ein chaotisches System läuft als Spur, ein Modell sagt die nächsten 0,5 Sekunden voraus; Abweichungen werden markiert',
-  );
+  hint(ui, (live ? HINWEIS_VORHERSAGE : 'Standbild bei reduzierter Bewegung: ' + HINWEIS_VORHERSAGE) + ' Synthetisch, gerechnet lokal im Browser.');
+  canvas.setAttribute('aria-label', 'Ein chaotisches System läuft als Spur und zeichnet seinen Schmetterling; Modelle sagen eine halbe Sekunde voraus, Abweichungen werden markiert');
 
   const lor = new Lorenz(rng);
-  const ar = new AR();
+  const models = ORDERS.map((p) => new AR(p));
   let colors: Colors = readColors(canvas);
 
-  // Ringpuffer der Wirklichkeit und der Vorhersage je Abtastwert
   const v = new Float32Array(CAP);
   const pred = new Float32Array(CAP);
-  const predFor = new Int32Array(CAP).fill(-1); // absoluter Index, für den pred gilt
-  let count = 0; // absolute Zahl der Abtastwerte
+  const predFor = new Int32Array(CAP).fill(-1);
+  let count = 0;
   const slot = (abs: number) => ((abs % CAP) + CAP) % CAP;
-  const at = (k: number) => v[slot(count - 1 - k)]; // k-t-letzter Wert
+  const at = (k: number) => v[slot(count - 1 - k)];
 
-  // Letzte Vorhersagen je Ausgabezeitpunkt, für den Fehler je Horizont
   const trajs: Float32Array[] = Array.from({ length: HN + FIT_EVERY + 2 }, () => new Float32Array(HN));
   const trajAt = new Int32Array(trajs.length).fill(-1);
-  const errH = new Float32Array(HN).fill(0.08); // mittlerer Betrag des Fehlers je Horizont
-  const cur = new Float32Array(HN);
+  const errH = new Float32Array(HN).fill(0.06);
+  const cur = models.map(() => new Float32Array(HN));
   let haveCur = false;
   let misses = 0;
   let calm = 1e9;
+  let missNow = false;
   let fitMs = 0;
   let target: number | null = null;
   let impulse = 0;
+  // Schmetterling: x–z-Projektion der letzten Zustände
+  const tx = new Float32Array(TRAIL);
+  const tz = new Float32Array(TRAIL);
+  let th = 0;
+  let tn = 0;
 
   let W = 0;
   let H = 0;
+  let Wp = 0; // Breite der Zeitspur
   let seconds = 10;
   let pxPerSample = 2;
   const padY = 18;
-  const xNow = () => W - 16 - HN * pxPerSample;
+  const xNow = () => Wp - 16 - HN * pxPerSample;
   function resize() {
     ({ W, H } = setupCanvas(canvas, ctx!));
-    seconds = Math.min(MAX_SECONDS, Math.max(5, W / 80));
-    pxPerSample = (W - 24) / (seconds * RATE + HN);
+    Wp = W > 720 ? Math.round(W * 0.7) : W;
+    seconds = Math.min(MAX_SECONDS, Math.max(5, Wp / 80));
+    pxPerSample = (Wp - 24) / (seconds * RATE + HN);
   }
   const yOf = (x: number) => H / 2 - x * (H / 2 - padY);
   const vOf = (y: number) => (H / 2 - y) / (H / 2 - padY);
 
   function tick() {
-    // Eingriff: Zeiger zieht, Stoß schiebt
     if (target !== null) lor.x += (target * SCALE - lor.x) * 0.12;
     lor.x += impulse;
     impulse *= 0.8;
     for (let s = 0; s < 2; s++) lor.step(0.0025);
+    tx[th] = lor.x;
+    tz[th] = lor.z;
+    th = (th + 1) % TRAIL;
+    if (tn < TRAIL) tn++;
     const x = Math.max(-1.3, Math.min(1.3, lor.x / SCALE));
     const abs = count;
     v[slot(abs)] = x;
     count++;
-    // Fehler je Horizont aus früheren Vorhersagen
     for (let h = 1; h <= HN; h++) {
       const issued = abs - h;
       const ti = ((issued % trajs.length) + trajs.length) % trajs.length;
@@ -182,29 +185,30 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
       const e = Math.abs(x - trajs[ti][h - 1]);
       errH[h - 1] += (e - errH[h - 1]) * 0.03;
     }
-    // Verfehlt? (gegen die Vorhersage, die für diesen Moment gilt)
     const p = predFor[slot(abs)] === abs ? pred[slot(abs)] : NaN;
-    const miss = !Number.isNaN(p) && Math.abs(x - p) > TOL;
-    if (miss && calm >= 25) misses++;
-    calm = miss ? 0 : calm + 1;
+    missNow = !Number.isNaN(p) && Math.abs(x - p) > TOL;
+    if (missNow && calm >= 25) misses++;
+    calm = missNow ? 0 : calm + 1;
 
-    if (count % FIT_EVERY === 0 && count >= P + 40) {
+    if (count % FIT_EVERY === 0 && count >= 72) {
       const t0 = performance.now();
-      const n = Math.min(FITWIN, count);
-      const series = (k: number) => v[slot(count - n + k)]; // k = 0 … n-1, aufsteigend
-      if (ar.fit(series, n)) {
-        ar.forecast(at, cur);
+      models.forEach((m, i) => {
+        const n = Math.min(WINDOWS[i], count);
+        const series = (k: number) => v[slot(count - n + k)];
+        if (m.fit(series, n)) m.forecast(at, cur[i]);
+      });
+      if (models[MAIN].ok) {
         haveCur = true;
         const issued = count - 1;
         const ti = issued % trajs.length;
-        trajs[ti].set(cur);
+        trajs[ti].set(cur[MAIN]);
         trajAt[ti] = issued;
         for (let h = 0; h < HN; h++) {
           const f = issued + 1 + h;
           const s = slot(f);
           if (predFor[s] !== f) {
             predFor[s] = f;
-            pred[s] = cur[h];
+            pred[s] = cur[MAIN][h];
           }
         }
       }
@@ -215,6 +219,50 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
   let sub = 0;
   let hover: { x: number; y: number } | null = null;
 
+  function drawButterfly() {
+    if (Wp >= W || tn < 2) return;
+    const c = ctx!;
+    const x0 = Wp + 12;
+    const w = W - x0 - 12;
+    const h = H - 24;
+    const bx = (x: number) => x0 + w / 2 + (x / 24) * (w / 2);
+    const by = (z: number) => 12 + h - (z / 52) * h;
+    c.strokeStyle = colors.raster;
+    c.lineWidth = 1;
+    c.beginPath();
+    c.moveTo(Math.round(Wp) + 0.5, 0);
+    c.lineTo(Math.round(Wp) + 0.5, H);
+    c.stroke();
+    // Schweif in vier Stufen, hinten blass
+    c.lineWidth = 0.9;
+    c.lineJoin = 'round';
+    const chunks = 4;
+    for (let q = 0; q < chunks; q++) {
+      const a = Math.floor((tn * q) / chunks);
+      const b = Math.floor((tn * (q + 1)) / chunks);
+      c.strokeStyle = colors.graphit;
+      c.globalAlpha = 0.12 + (0.5 * (q + 1)) / chunks;
+      c.beginPath();
+      for (let i = a; i <= Math.min(b, tn - 1); i++) {
+        const idx = (th - tn + i + TRAIL) % TRAIL;
+        const px = bx(tx[idx]);
+        const py = by(tz[idx]);
+        if (i === a) c.moveTo(px, py);
+        else c.lineTo(px, py);
+      }
+      c.stroke();
+    }
+    c.globalAlpha = 1;
+    const last = (th - 1 + TRAIL) % TRAIL;
+    c.fillStyle = missNow ? colors.bernstein : colors.graphit;
+    c.beginPath();
+    c.arc(bx(tx[last]), by(tz[last]), 3.5, 0, Math.PI * 2);
+    c.fill();
+    c.fillStyle = colors.blei;
+    c.textAlign = 'left';
+    c.fillText('Zustand x · z', x0 + 4, 14);
+  }
+
   function draw() {
     const c = ctx!;
     c.clearRect(0, 0, W, H);
@@ -224,7 +272,6 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
     const shift = sub * pxPerSample;
     const xAt = (k: number) => xNow() - k * pxPerSample - shift;
 
-    // Zeitachse unten, ein Strich je Sekunde
     c.strokeStyle = colors.raster;
     c.lineWidth = 1;
     c.beginPath();
@@ -235,7 +282,6 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
       c.lineTo(Math.round(x) + 0.5, H);
     }
     c.stroke();
-    // Jetzt-Linie
     const xn = Math.round(xNow()) + 0.5;
     c.beginPath();
     c.moveTo(xn, 0);
@@ -244,142 +290,135 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
     c.fillStyle = colors.blei;
     c.textAlign = 'left';
     c.fillText('jetzt', xn + 6, 14);
-    c.fillText(`+${HORIZON.toFixed(1).replace('.', ',')} s`, xn + 6, 30);
+    c.fillText('+0,5 s', xn + 6, 30);
 
-    if (n < 2) return;
-
-    // Lücken zwischen Vorhersage und Wirklichkeit
-    c.fillStyle = colors.bernstein;
-    c.globalAlpha = 0.22;
-    for (let k = n - 1; k >= 1; k--) {
-      const a = count - 1 - k;
-      const sa = slot(a);
-      const sb = slot(a + 1);
-      if (predFor[sa] !== a || predFor[sb] !== a + 1) continue;
-      const da = v[sa] - pred[sa];
-      const db = v[sb] - pred[sb];
-      if (Math.abs(da) <= TOL && Math.abs(db) <= TOL) continue;
-      c.beginPath();
-      c.moveTo(xAt(k), yOf(v[sa]));
-      c.lineTo(xAt(k - 1), yOf(v[sb]));
-      c.lineTo(xAt(k - 1), yOf(pred[sb]));
-      c.lineTo(xAt(k), yOf(pred[sa]));
-      c.closePath();
-      c.fill();
-    }
-    c.globalAlpha = 1;
-
-    // Schatten: was vor 1,5 s für diesen Moment vorhergesagt wurde
-    c.strokeStyle = colors.blei;
-    c.lineWidth = 1;
-    c.setLineDash([3, 3]);
-    c.beginPath();
-    let pen = false;
-    for (let k = n - 1; k >= 0; k--) {
-      const a = count - 1 - k;
-      const s = slot(a);
-      if (predFor[s] !== a) {
-        pen = false;
-        continue;
+    if (n >= 2) {
+      c.fillStyle = colors.bernstein;
+      c.globalAlpha = 0.22;
+      for (let k = n - 1; k >= 1; k--) {
+        const a = count - 1 - k;
+        const sa = slot(a);
+        const sb = slot(a + 1);
+        if (predFor[sa] !== a || predFor[sb] !== a + 1) continue;
+        if (Math.abs(v[sa] - pred[sa]) <= TOL && Math.abs(v[sb] - pred[sb]) <= TOL) continue;
+        c.beginPath();
+        c.moveTo(xAt(k), yOf(v[sa]));
+        c.lineTo(xAt(k - 1), yOf(v[sb]));
+        c.lineTo(xAt(k - 1), yOf(pred[sb]));
+        c.lineTo(xAt(k), yOf(pred[sa]));
+        c.closePath();
+        c.fill();
       }
-      const x = xAt(k);
-      const y = yOf(pred[s]);
-      if (pen) c.lineTo(x, y);
-      else c.moveTo(x, y);
-      pen = true;
-    }
-    c.stroke();
-    c.setLineDash([]);
-
-    // Wirklichkeit
-    c.strokeStyle = colors.graphit;
-    c.lineWidth = 1.6;
-    c.lineJoin = 'round';
-    c.beginPath();
-    for (let k = n - 1; k >= 0; k--) {
-      const x = xAt(k);
-      const y = yOf(at(k));
-      if (k === n - 1) c.moveTo(x, y);
-      else c.lineTo(x, y);
-    }
-    c.stroke();
-
-    // Vorhersage ab jetzt mit Fehlerkegel
-    if (haveCur) {
-      const x0 = xAt(0);
+      c.globalAlpha = 1;
+      c.strokeStyle = colors.blei;
+      c.lineWidth = 1;
+      c.setLineDash([3, 3]);
       c.beginPath();
-      c.moveTo(x0, yOf(at(0)));
-      for (let h = 0; h < HN; h++) c.lineTo(x0 + (h + 1) * pxPerSample, yOf(cur[h] + 2 * errH[h]));
-      for (let h = HN - 1; h >= 0; h--) c.lineTo(x0 + (h + 1) * pxPerSample, yOf(cur[h] - 2 * errH[h]));
-      c.closePath();
-      c.fillStyle = colors.band;
-      c.fill();
-      c.strokeStyle = colors.graphit;
-      c.lineWidth = 1.2;
-      c.setLineDash([4, 3]);
-      c.beginPath();
-      c.moveTo(x0, yOf(at(0)));
-      for (let h = 0; h < HN; h++) c.lineTo(x0 + (h + 1) * pxPerSample, yOf(cur[h]));
-      c.stroke();
-      c.setLineDash([]);
-    }
-    // Schreibkopf
-    c.fillStyle = colors.graphit;
-    c.beginPath();
-    c.arc(xAt(0), yOf(at(0)), 2.8, 0, Math.PI * 2);
-    c.fill();
-
-    // Messcursor in der Vergangenheit
-    if (hover && hover.x < xNow()) {
-      const k = Math.round((xNow() - shift - hover.x) / pxPerSample);
-      if (k >= 0 && k < n) {
-        const x = xAt(k);
+      let pen = false;
+      for (let k = n - 1; k >= 0; k--) {
         const a = count - 1 - k;
         const s = slot(a);
-        c.strokeStyle = colors.blei;
-        c.globalAlpha = 0.6;
+        if (predFor[s] !== a) {
+          pen = false;
+          continue;
+        }
+        if (pen) c.lineTo(xAt(k), yOf(pred[s]));
+        else c.moveTo(xAt(k), yOf(pred[s]));
+        pen = true;
+      }
+      c.stroke();
+      c.setLineDash([]);
+      c.strokeStyle = colors.graphit;
+      c.lineWidth = 1.7;
+      c.lineJoin = 'round';
+      c.beginPath();
+      for (let k = n - 1; k >= 0; k--) {
+        if (k === n - 1) c.moveTo(xAt(k), yOf(at(k)));
+        else c.lineTo(xAt(k), yOf(at(k)));
+      }
+      c.stroke();
+      if (haveCur) {
+        const x0 = xAt(0);
         c.beginPath();
-        c.moveTo(Math.round(x) + 0.5, 0);
-        c.lineTo(Math.round(x) + 0.5, H - 8);
-        c.stroke();
+        c.moveTo(x0, yOf(at(0)));
+        for (let h = 0; h < HN; h++) c.lineTo(x0 + (h + 1) * pxPerSample, yOf(cur[MAIN][h] + 2 * errH[h]));
+        for (let h = HN - 1; h >= 0; h--) c.lineTo(x0 + (h + 1) * pxPerSample, yOf(cur[MAIN][h] - 2 * errH[h]));
+        c.closePath();
+        c.fillStyle = colors.band;
+        c.fill();
+        // Fächer der fünf Modelle
+        c.setLineDash([4, 3]);
+        models.forEach((m, i) => {
+          if (!m.ok) return;
+          const main = i === MAIN;
+          c.strokeStyle = main ? colors.graphit : colors.blei;
+          c.lineWidth = main ? 1.3 : 0.9;
+          c.globalAlpha = main ? 1 : 0.6;
+          c.beginPath();
+          c.moveTo(x0, yOf(at(0)));
+          for (let h = 0; h < HN; h++) c.lineTo(x0 + (h + 1) * pxPerSample, yOf(cur[i][h]));
+          c.stroke();
+        });
         c.globalAlpha = 1;
-        c.textAlign = x > W - 150 ? 'right' : 'left';
-        const dx = x > W - 150 ? -8 : 8;
-        c.fillStyle = colors.blei;
-        c.fillText(`−${(k * DT).toFixed(1)} s`, x + dx, H - 18);
-        c.fillStyle = colors.graphit;
-        c.fillText(`ist ${fmt(v[s])}`, x + dx, 14 + 18);
-        if (predFor[s] === a) {
+        c.setLineDash([]);
+      }
+      c.fillStyle = missNow ? colors.bernstein : colors.graphit;
+      c.beginPath();
+      c.arc(xAt(0), yOf(at(0)), 3, 0, Math.PI * 2);
+      c.fill();
+
+      if (hover && hover.x < xNow()) {
+        const k = Math.round((xNow() - shift - hover.x) / pxPerSample);
+        if (k >= 0 && k < n) {
+          const x = xAt(k);
+          const a = count - 1 - k;
+          const s = slot(a);
+          c.strokeStyle = colors.blei;
+          c.globalAlpha = 0.6;
+          c.beginPath();
+          c.moveTo(Math.round(x) + 0.5, 0);
+          c.lineTo(Math.round(x) + 0.5, H - 8);
+          c.stroke();
+          c.globalAlpha = 1;
+          const left = x > Wp - 150;
+          c.textAlign = left ? 'right' : 'left';
+          const dx = left ? -8 : 8;
           c.fillStyle = colors.blei;
-          c.fillText(`vorhergesagt ${fmt(pred[s])}`, x + dx, 14 + 34);
+          c.fillText(`−${(k * DT).toFixed(1)} s`, x + dx, H - 18);
+          c.fillStyle = colors.graphit;
+          c.fillText(`ist ${fmt(v[s])}`, x + dx, 32);
+          if (predFor[s] === a) {
+            c.fillStyle = colors.blei;
+            c.fillText(`vorhergesagt ${fmt(pred[s])}`, x + dx, 48);
+          }
         }
       }
     }
+    drawButterfly();
   }
 
   let lastReadout = 0;
   function updateReadout(now: number, force = false) {
     if (!force && now - lastReadout < 150) return;
     lastReadout = now;
-    set([`${HORIZON.toFixed(1).replace('.', ',')} s`, '±' + errH[HN - 1].toFixed(2), String(misses), fitMs.toFixed(1) + ' ms']);
+    set(['0,5 s', '±' + errH[HN - 1].toFixed(2), String(misses), fitMs.toFixed(1) + ' ms']);
   }
 
   resize();
-  // Vorlauf, damit das Modell beim ersten Bild etwas gelernt hat
-  for (let k = 0; k < RATE * 8; k++) tick();
+  for (let k = 0; k < RATE * 12; k++) tick();
   if (!live) {
     for (let k = 0; k < seconds * RATE; k++) tick();
     draw();
     updateReadout(0, true);
-    new ResizeObserver(() => {
-      resize();
-      draw();
-    }).observe(canvas);
-    return;
+    const stopStill = stillImage(canvas, resize, draw);
+    return () => {
+      stopStill();
+      ac.abort();
+    };
   }
 
   let acc = 0;
-  runLoop(
+  const stopLoop = runLoop(
     canvas,
     {
       frame(dt, now) {
@@ -398,40 +437,60 @@ export function mountForecast(canvas: HTMLCanvasElement, ui: UI = {}) {
       },
     },
     reduced,
+    signal,
   );
 
   const local = (ev: PointerEvent) => {
     const r = canvas.getBoundingClientRect();
     return { x: ev.clientX - r.left, y: ev.clientY - r.top };
   };
-  canvas.addEventListener('pointermove', (ev) => {
-    const p = local(ev);
-    hover = p;
-    if (ev.pointerType === 'mouse' || ev.buttons > 0) {
-      target = p.x >= xNow() - 40 ? Math.max(-1.2, Math.min(1.2, vOf(p.y))) : null;
-    }
-  });
-  canvas.addEventListener('pointerdown', (ev) => {
-    const p = local(ev);
-    impulse += vOf(p.y) > at(0) ? 1.6 : -1.6;
-    if (ev.pointerType !== 'mouse') hover = p;
-  });
-  const release = () => {
-    target = null;
+  canvas.addEventListener(
+    'pointermove',
+    (ev) => {
+      const p = local(ev);
+      hover = p;
+      if (ev.pointerType === 'mouse' || ev.buttons > 0) {
+        target = p.x >= xNow() - 40 && p.x < Wp ? Math.max(-1.2, Math.min(1.2, vOf(p.y))) : null;
+      }
+    },
+    { signal },
+  );
+  canvas.addEventListener(
+    'pointerdown',
+    (ev) => {
+      const p = local(ev);
+      impulse += vOf(p.y) > at(0) ? 1.6 : -1.6;
+      if (ev.pointerType !== 'mouse') hover = p;
+    },
+    { signal },
+  );
+  const release = () => (target = null);
+  canvas.addEventListener('pointerup', release, { signal });
+  canvas.addEventListener('pointercancel', release, { signal });
+  canvas.addEventListener(
+    'pointerleave',
+    () => {
+      target = null;
+      hover = null;
+    },
+    { signal },
+  );
+  canvas.addEventListener(
+    'keydown',
+    (ev) => {
+      if (ev.key === ' ' || ev.key === 'Enter' || ev.key === 'ArrowUp') {
+        ev.preventDefault();
+        impulse += 1.6;
+      } else if (ev.key === 'ArrowDown') {
+        ev.preventDefault();
+        impulse -= 1.6;
+      }
+    },
+    { signal },
+  );
+  return () => {
+    stopLoop();
+    ac.abort();
+    ctx.clearRect(0, 0, W, H);
   };
-  canvas.addEventListener('pointerup', release);
-  canvas.addEventListener('pointercancel', release);
-  canvas.addEventListener('pointerleave', () => {
-    target = null;
-    hover = null;
-  });
-  canvas.addEventListener('keydown', (ev) => {
-    if (ev.key === ' ' || ev.key === 'Enter' || ev.key === 'ArrowUp') {
-      ev.preventDefault();
-      impulse += 1.6;
-    } else if (ev.key === 'ArrowDown') {
-      ev.preventDefault();
-      impulse -= 1.6;
-    }
-  });
 }

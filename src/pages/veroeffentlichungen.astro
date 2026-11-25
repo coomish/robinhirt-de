@@ -1,0 +1,87 @@
+---
+import Base from '../layouts/Base.astro';
+import { publikationen } from '../data/publikationen';
+
+const jahre = [...new Set(publikationen.map((p) => p.jahr))].sort((a, b) => b - a);
+const title = 'Veröffentlichungen – Robin Hirt';
+const description =
+  'Veröffentlichungen von Dr.-Ing. Robin Hirt zu angewandtem maschinellem Lernen, Transfer- und Meta-Learning, Service-Systemen und Informationssystemen.';
+---
+
+<Base title={title} description={description} path="/veroeffentlichungen">
+  <main id="inhalt">
+    <section class="row section" aria-labelledby="h-pub">
+      <div class="axis"><h2 id="h-pub">Veröffentlichungen</h2></div>
+      <div class="content">
+        <h1>Veröffentlichungen</h1>
+        <p>
+          Beiträge aus Promotion und Forschung am KIT, von 2017 bis heute. Die vollständige Liste
+          mit Zitationen führt
+          <a href="https://scholar.google.com/citations?user=623r60sAAAAJ" rel="noopener">Google Scholar</a>.
+        </p>
+      </div>
+    </section>
+    {
+      jahre.map((jahr) => (
+        <section class="row jahr" aria-label={`Veröffentlichungen ${jahr}`}>
+          <div class="axis"><p class="mono">{jahr}</p></div>
+          <ol class="refs content">
+            {publikationen
+              .filter((p) => p.jahr === jahr)
+              .map((p) => (
+                <li>
+                  <cite>{p.titel}</cite>
+                  <span class="meta">
+                    {p.autoren}. {p.ort}.
+                  </span>
+                  {p.url && (
+                    <a class="mono" href={p.url} rel="noopener">
+                      {p.url.replace(/^https?:\/\//, '')}
+                    </a>
+                  )}
+                </li>
+              ))}
+          </ol>
+        </section>
+      ))
+    }
+    <section class="row section">
+      <div class="axis"></div>
+      <div class="content"><p><a href="/">Zurück zur Startseite</a></p></div>
+    </section>
+  </main>
+</Base>
+
+<style>
+  h1 {
+    font-size: var(--s3);
+    font-weight: 600;
+  }
+  .jahr {
+    padding-block: 0.4rem;
+  }
+  .jahr .axis p {
+    position: sticky;
+    top: 1rem;
+    padding-top: 0.95rem;
+  }
+  .refs > li {
+    padding-block: 0.8rem;
+    border-top: var(--hairline) solid var(--raster);
+  }
+  .refs > li:last-child {
+    border-bottom: 0;
+  }
+  .meta {
+    display: block;
+    color: var(--blei);
+    font-size: var(--s0);
+    margin-top: 0.15rem;
+  }
+  @media (max-width: 900px) {
+    .jahr .axis p {
+      position: static;
+      padding-top: 0.6rem;
+    }
+  }
+</style>
