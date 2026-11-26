@@ -40,7 +40,8 @@
   --graphit: #15191d;
   --blei: #58646e;
   --raster: #d3dae0;
-  --signal: #087a80;
+  --signal: #d4431c; /* Akzent: nur für Ausreißer und Platzhalter */
+  --feld: #0f6f7a; /* Feldfarbe, Petrol; Alternative Blau siehe unten */
   --band: rgb(21 25 29 / 0.06);
   color-scheme: light;
 
@@ -70,7 +71,8 @@
     --graphit: #e6eaee;
     --blei: #98a4ae;
     --raster: #262d33;
-    --signal: #35d0c4;
+    --signal: #ff8f62;
+    --feld: #3fb6c0;
     --band: rgb(230 234 238 / 0.07);
     color-scheme: dark;
   }
@@ -80,9 +82,24 @@
   --graphit: #e6eaee;
   --blei: #98a4ae;
   --raster: #262d33;
-  --signal: #35d0c4;
+  --signal: #ff8f62;
+  --feld: #3fb6c0;
   --band: rgb(230 234 238 / 0.07);
   color-scheme: dark;
+}
+
+/* Alternative Feldfarbe zum Vergleich: ein Stahlblau, deutlich anders als das
+   Royalblau von prenode.de */
+:root[data-feld='blau'] {
+  --feld: #2a63a3;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-feld='blau']:not([data-theme='light']) {
+    --feld: #7db2ea;
+  }
+}
+:root[data-feld='blau'][data-theme='dark'] {
+  --feld: #7db2ea;
 }
 
 /* ---- Grund --------------------------------------------------------------- */
@@ -277,11 +294,19 @@ canvas {
 /* ---- Kopf ---------------------------------------------------------------- */
 
 .top {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 3;
   display: flex;
   justify-content: space-between;
   align-items: baseline;
   gap: 1rem;
   padding: 1.1rem var(--rand);
+}
+main:not(:has(.hero)) {
+  padding-top: 4.4rem;
 }
 .top a {
   text-decoration: none;

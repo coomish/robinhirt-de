@@ -340,3 +340,67 @@ war zu unruhig, der Schwarm soll größere Elemente haben.
   möglichen Kurven. **Schwarm** mit weniger, größeren Tieren (Striche, 2,4 px,
   Länge nach Tempo) und gefüllten, weit gepolsterten Hüllen.
 - OG-Bild: dasselbe Schwarzweißfoto, Text links im Freiraum.
+
+## Siebte Runde: Zeichenfeld
+
+Ein Motiv statt drei, ein Bild statt zwei Bänder. Der Kopf ist ein voller
+Bildschirm: Grund, darüber ein Zeichenfeld über die ganze Fläche, davor ich
+freigestellt, davor Name und Kernsatz.
+
+**Was an der Referenz wirkt.** Tausende kleine, scharfe Zeichen stehen auf
+einem strengen Raster, und erst das organische Muster darüber, dichte Inseln
+aus kräftigen Zeichen zwischen feinen grauen Punkten, macht aus dem Raster ein
+Bild. Eine einzige kräftige Farbe trägt fast alles, die wenigen Zeichen in
+anderen Farben wirken dadurch wie Funde. Das Feld ist groß und angeschnitten,
+es ragt über den Rand und läuft nach unten aus, statt in einem Kasten zu sitzen.
+
+**Was wir übernehmen, was nicht.** Übernommen: Raster, Inseln, eine Farbe,
+Anschnitt, Auslaufen nach unten. Nicht übernommen: der Kreis (unser Feld ist
+eine Fläche, die links dünn und rechts dicht ist), die Zeichenfamilie (dort
+Kreise, Quadrate, Kreuze; bei uns Striche, deren Neigung den vorhergesagten
+Wert zeigt, und Punkte), und das Blau (Farbwahl zwischen Petrol und einem
+eigenen Blau, Standbilder folgen).
+
+```
+┌──────────────────────────────────────────────────────────────┐ 100 svh
+│ Robin Hirt                                              Hell │
+│ · · · · · · · · · · · · · · · · ╱╱╱╲╲ · · · · ╱╱╱╱ · · ·     │
+│ · · · · · · · · · · · · · · ╱╱╱╱╱╲╲╲╲╲ · · ╱╱╱╱╱╱╱ · · ·     │
+│ · · · · · · · · · · · · · ╱╱╱╱  ┌──────┐ ╲╲╲ ╱╱╱╱╱╱╱╱ · ·    │
+│ · · · · · · · · · · · · · ╲╲╲╲  │      │ ╲╲╲╲╲╲╲ ╱╱╱╱ · ·    │
+│                     · · · · ╲╲  │  ich │ ╲╲╲╲╲ × ╲╲╲╲╲ · ·   │  × = Ausreißer
+│ Dr.-Ing. Robin Hirt         · · │      │ · ╲╲╲╲╲╲╲╲╲╲ · ·    │      in Akzent
+│ Unternehmer. Seit über      · · │      │ · · ╲╲╲╲╲╲╲╲ · ·    │
+│ zehn Jahren arbeite ich     · · │      │ · · · ╲╲╲╲ · · ·    │
+│ an künstlicher Intelligenz, · · │      │ · · · · · · · ·     │
+│ die im Betrieb              · ·                              │
+│ funktionieren muss.          ·   ·    ·     ·    ·   ·       │  Feld läuft aus
+├──────────────────────────────────────────────────────────────┤
+│ Ein Modell für den Betrieb muss wissen, wo es sich nicht     │
+│ sicher ist. Hier füllt sich das Feld, wo es Daten hat.       │
+│ Tipp auf die Fläche und gib ihm welche.      ▸ Wie das funkt.│
+└──────────────────────────────────────────────────────────────┘
+```
+
+**Das Feld.** Ein zweidimensionaler Gauß-Prozess (RBF-Kern) über der Fläche,
+aufgebaut auf `model.ts`. Messpunkte kommen alle paar hundert Millisekunden
+an, öfter rechts und in der Mitte als links, und verblassen nach etwa 30 s.
+Jede Rasterzelle (14 px, auf schwachen Geräten 18 px) ist ein Zeichen: Wo
+die Streuung der Vorhersage klein ist, steht ein kräftiger Strich in der
+Feldfarbe, seine Neigung zeigt den vorhergesagten Wert (−1 … 1 → −70° … 70°),
+seine Stärke die Sicherheit. Wo das Modell nichts weiß, steht ein feiner
+grauer Punkt. Ausreißer (Leave-one-out, > 3 σ) sind kleine Kreuze in der
+Akzentfarbe, die einzigen Zeichen in einer zweiten Farbe. Links, hinter dem
+Text, dämpft eine Maske das Feld; nach unten läuft es aus. Ein Klick setzt
+einen Messpunkt, und das Feld füllt sich um ihn herum. Canvas 2D, ein Pfad
+je Zeichenklasse, Werte zwischen zwei Fits weich überblendet.
+
+**Prüfung gegen die sechs Punkte.** (1) Ein Motiv, und der Satz darunter
+erklärt es ohne Fachwort; die Fachdetails stehen im Aufklapper. (2) Ein Bild
+mit Ebenen statt zwei Bändern; das Feld liegt hinter dem Foto, der Text davor.
+(3) Fläche statt Linie: tausende Zeichen, Inseln, Auslaufen. (4) Unter dem
+Kopf ein asymmetrisches Raster über die volle Breite, Werdegang als drei
+Kapitel mit prenode als größtem. (5) Neue Schrift mit Charakter, Vergleich
+dreier Kandidaten folgt; Monospace nur im Aufklapper. (6) Kernsatz nur im
+Kopf, „Über mich“ entfällt, Auftritte mit Thema, ein neuer Abschnitt
+„Wovon ich überzeugt bin“ als zweiter Höhepunkt.
