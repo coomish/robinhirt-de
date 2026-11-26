@@ -255,8 +255,6 @@ unverändert:
   k gewählt, solange eine weitere Gruppe die Trägheit noch um 38 % senkt,
   mit Hysterese gegen Flackern. Hülle je Gruppe (Andrew), Außenseiter ab 2,2
   Streuungen vom Gruppenmittel. Maus oder Finger verscheuchen.
-- `/motive` – unverlinkte Entwurfsseite mit allen dreien untereinander,
-  `noindex`; vor der Veröffentlichung löschen.
 
 Alle drei teilen `src/scripts/ui.ts` (Schleife mit Pause, Anzeige, Farben)
 und dieselbe Sprache: Papier, Graphit, Band, Bernstein nur für das, was

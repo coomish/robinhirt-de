@@ -20,16 +20,14 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 - [x] OG-Bild aus demselben Foto wie der Kopf (`tools/og.html`, `public/og-foto.jpg`).
 - [ ] Die Originale sind 1536 px breit; für sehr große Bildschirme ein Export
       mit 2400 px nachliefern (gleiche Bilder, nur größer).
-- [ ] Bühnenfoto: im Drive nicht gefunden. Durchsucht: Marketing-Ablage (Hannover-Messe-
-      Ordner 2020/2021/2024, „Vortrag Industrial Transformation Stage“, Handelsblatt
-      KI Summit), Admin „20240425 Messe_“, Dateinamen mit Bühne/Vortrag/Keynote/Stage.
-      Gefunden wurden nur Grafiken (Speaker-Teaser, Signaturen). Online gab es keine
-      Fotos mit geklärten Rechten. Platzhalter steht weiter bei „Auftritte“.
+- [ ] Bühnenfoto: in der Dateiablage nicht gefunden (Messe- und Vortragsordner,
+      Dateinamen mit Bühne/Vortrag/Keynote/Stage). Gefunden wurden nur Grafiken.
+      Online gab es keine Fotos mit geklärten Rechten. Platzhalter steht weiter bei „Auftritte“.
 - [ ] Link zum Video eines aktuellen Vortrags plus lokales Vorschaubild
       (`public/video-vorschau.svg` ersetzen, `href` am `.video-link` setzen).
 - [ ] Jahr, in dem die Selbständigkeit mit 16 begann (`src/components/Timeline.astro`, erster Eintrag).
-- [ ] Jahr des Handelsblatt KI Summit: steht jetzt als 2021, weil der Drive-Ordner
-      „2021-09 Handelsblatt KI Summit“ heißt. Bitte bestätigen.
+- [ ] Jahr des Handelsblatt KI Summit: steht als 2021 (aus einem Ordnerdatum in der
+      Ablage abgeleitet). Bitte bestätigen.
 - [ ] Jahr von VDMA Startup the Future: 2021 oder 2022.
 - [ ] „gegründet“ oder „mitgegründet“ (Zeitachse 2018, Fußzeile auf Englisch, JSON-LD `founder`).
 - [ ] Texte für Impressum (`src/pages/impressum.astro`) und Datenschutz (`src/pages/datenschutz.astro`).
@@ -57,8 +55,6 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 
 ## Vor der Veröffentlichung
 
-- [ ] `src/pages/motive.astro` (Vergleichsseite) löschen; der Wechsel per Zufall
-      und „nächstes“ bleibt.
 - [ ] OG-Bild zeigt das lernende Modell; bei Bedarf zu einem anderen Motiv rendern.
 - [ ] Veröffentlichungen prüfen (`src/data/publikationen.ts`, aus Semantic Scholar,
       Google Scholar war nur teilweise lesbar, dblp blockierte). Vier Einträge

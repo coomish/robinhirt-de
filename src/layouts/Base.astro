@@ -23,7 +23,8 @@ const ogImage = new URL(href('/og.png'), site).href;
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
-    {noindex && <meta name="robots" content="noindex, nofollow" />}
+    {/* Entwurf: bis zur Freigabe nicht indexieren */}
+    <meta name="robots" content="noindex, nofollow" />
     <link rel="icon" href={href('/favicon.svg')} type="image/svg+xml" />
     <meta name="theme-color" content="#f4f6f7" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0f1316" media="(prefers-color-scheme: dark)" />
