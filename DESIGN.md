@@ -404,3 +404,21 @@ Kapitel mit prenode als größtem. (5) Neue Schrift mit Charakter, Vergleich
 dreier Kandidaten folgt; Monospace nur im Aufklapper. (6) Kernsatz nur im
 Kopf, „Über mich“ entfällt, Auftritte mit Thema, ein neuer Abschnitt
 „Wovon ich überzeugt bin“ als zweiter Höhepunkt.
+
+**Gebaut (Stand nach der Farbwahl).** Feldfarbe Petrol `#0F6F7A` (dunkel
+`#3FB6C0`), Akzent für Ausreißer und Platzhalter `#BB3813` (dunkel `#FF8F62`).
+Schrift: Bricolage Grotesque (OFL) für Kernsatz, Kapitel und Überzeugungen,
+Instrument Sans für Fließtext mit 19 px auf dem Desktop, JetBrains Mono nur im
+Aufklapper. Verglichen wurden Bricolage Grotesque, Fraunces und Syne;
+Bricolage hat in großen Graden den meisten Charakter (eigenwillige
+Innenformen, enge, sichere Buchstaben) und bleibt ein Grotesk, Fraunces zieht
+Richtung „Serife auf Papier“, Syne ist breit und modisch und liest sich in
+langen Zeilen schlechter. Unter dem Kopf ein Zwölferraster: Abschnittsname in
+den ersten zwei Spalten, Bauen und Forschen nebeneinander, Gründen darunter
+groß, die drei Überzeugungen versetzt, Auftritte mit Jahr, Ort und Thema,
+Belege in drei Spalten, zum Schluss das kleine Foto mit einem Satz und dem
+Kontakt. Kurve, Vorhersage und Schwarm sind aus dem Code entfernt (Git-Historie).
+
+**Überarbeitungsrunde.** Nach Vorlage sah noch das Kästchen „Vorschaubild
+folgt“ bei den Auftritten aus, eine graue Karte mit Platzhaltergrafik. Es ist
+entfernt; der Hinweis auf das Video steht als eine Zeile unter der Liste.

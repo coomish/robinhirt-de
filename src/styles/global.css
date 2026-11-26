@@ -17,6 +17,22 @@
   unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url('/fonts/bricolage-grotesque-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
   font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
@@ -40,12 +56,13 @@
   --graphit: #15191d;
   --blei: #58646e;
   --raster: #d3dae0;
-  --signal: #d4431c; /* Akzent: nur für Ausreißer und Platzhalter */
-  --feld: #0f6f7a; /* Feldfarbe, Petrol; Alternative Blau siehe unten */
+  --signal: #bb3813; /* Akzent: nur für Ausreißer und Platzhalter, 5:1 auf Papier */
+  --feld: #0f6f7a; /* Feldfarbe: Petrol (gewählt) */
   --band: rgb(21 25 29 / 0.06);
   color-scheme: light;
 
   --sans: 'Instrument Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --display: 'Bricolage Grotesque', 'Instrument Sans', system-ui, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 
   /* Skala, Basis 17 px, Faktor 1,25 */
@@ -111,7 +128,7 @@
 }
 
 html {
-  font-size: 106.25%; /* 17 px */
+  font-size: 106.25%; /* 17 px, auf dem Desktop 19 px */
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
 }
@@ -121,13 +138,19 @@ html {
   }
 }
 
+@media (min-width: 900px) {
+  html {
+    font-size: 118.75%; /* 19 px */
+  }
+}
+
 body {
   margin: 0;
   background: var(--papier);
   color: var(--graphit);
   font-family: var(--sans);
   font-size: var(--s1);
-  line-height: 1.55;
+  line-height: 1.5;
   font-feature-settings: 'kern', 'liga', 'ss01';
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -179,14 +202,57 @@ canvas {
   max-width: 100%;
 }
 
-/* Beschriftung: alles, was gemessen oder zugeordnet ist */
+/* Beschriftung: Abschnittsnamen, Jahre, Nebenangaben */
 .mono {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: var(--s-1);
-  font-weight: 450;
+  font-weight: 500;
   letter-spacing: 0.01em;
   font-variant-numeric: tabular-nums;
   color: var(--blei);
+}
+/* Monospace nur für Zahlen im Aufklapper */
+.code {
+  font-family: var(--mono);
+  font-size: var(--s-1);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---- Breites, asymmetrisches Raster ------------------------------------- */
+.g {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(1rem, 2vw, 2.2rem);
+  row-gap: 1.2rem;
+  padding-inline: var(--rand);
+  max-width: 96rem;
+}
+.abschnitt {
+  padding-block: clamp(3rem, 9vh, 7rem);
+  border-top: var(--hairline) solid var(--raster);
+}
+.abschnitt .label {
+  grid-column: 1 / 3;
+  font-family: var(--sans);
+  font-size: var(--s-1);
+  font-weight: 500;
+  color: var(--blei);
+  margin: 0;
+  padding-top: 0.4rem;
+}
+.display {
+  font-family: var(--display);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+@media (max-width: 900px) {
+  .g > * {
+    grid-column: 1 / -1 !important;
+  }
+  .abschnitt .label {
+    padding-top: 0;
+  }
 }
 
 .visually-hidden {
@@ -228,7 +294,7 @@ canvas {
   padding-top: 0.35rem; /* optisch auf die Grundlinie der ersten Zeile */
 }
 .axis h2 {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: var(--s-1);
   font-weight: 500;
   letter-spacing: 0.02em;
@@ -280,7 +346,6 @@ canvas {
   padding: 0.4rem 0.7rem;
   background: var(--graphit);
   color: var(--papier);
-  font-family: var(--mono);
   font-size: var(--s-1);
   text-decoration: none;
   z-index: 2;
@@ -322,8 +387,8 @@ main:not(:has(.hero)) {
   border: var(--hairline) solid var(--raster);
   color: var(--blei);
   font: inherit;
-  font-family: var(--mono);
   font-size: var(--s-1);
+  font-weight: 500;
   padding: 0.25rem 0.6rem;
   cursor: pointer;
   border-radius: 2px;

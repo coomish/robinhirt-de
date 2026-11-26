@@ -59,7 +59,7 @@ const frei = fs.existsSync('public/buehne-frei.png');
         wäre, wird als Kreuz markiert und beim Fit ausgelassen. Alles rechnet lokal im Browser,
         nichts wird gesendet.
       </p>
-      <p class="mono werte" data-ro="werte"></p>
+      <p class="code werte" data-ro="werte"></p>
     </details>
   </div>
 </div>
@@ -124,11 +124,15 @@ const frei = fs.existsSync('public/buehne-frei.png');
   }
   .kernsatz {
     margin-top: clamp(0.8rem, 2vh, 1.6rem);
-    font-size: clamp(2rem, 5vw, 5.8rem);
-    line-height: 1.02;
+    font-family: var(--display);
+    font-size: clamp(2rem, 5.2vw, 6rem);
+    line-height: 1;
     letter-spacing: -0.025em;
     font-weight: 600;
     text-wrap: balance;
+  }
+  h1 {
+    font-family: var(--display);
   }
   .erklaerung {
     padding-block: clamp(1.6rem, 4vh, 2.8rem);
