@@ -27,7 +27,17 @@ const frei = fs.existsSync('public/buehne-frei.png');
         decoding="async"
       />
     ) : (
-      <div class="frei frei-fehlt" aria-hidden="true"><span class="todo">Freisteller folgt</span></div>
+      <img
+        class="platte"
+        src={href('/buehne-1200.jpg')}
+        srcset={`${href('/buehne-1200.jpg')} 1200w, ${href('/buehne-1536.jpg')} 1536w`}
+        sizes="(max-width: 760px) 72vw, 40vw"
+        width="1536"
+        height="1024"
+        alt="Robin Hirt sitzt auf einem Hocker und blickt in die Kamera, Schwarzweißfoto"
+        fetchpriority="high"
+        decoding="async"
+      />
     )
   }
   <div class="hero-text">
@@ -93,18 +103,26 @@ const frei = fs.existsSync('public/buehne-frei.png');
     object-position: bottom;
     pointer-events: none;
   }
-  .frei-fehlt {
-    height: 70%;
-    width: min(34vw, 30rem);
-    border: 1px dashed var(--signal);
-    display: grid;
-    place-items: end start;
-    padding: 1rem;
-    font-size: var(--s-1);
-    background: rgb(from var(--papier) r g b / 0.5);
+  /* Ohne Freisteller: das Foto als Platte, angeschnitten am rechten und unteren Rand */
+  .platte {
+    position: absolute;
+    right: -2vw;
+    bottom: -4vh;
+    width: min(40vw, 36rem);
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    object-position: 68% 18%;
+    filter: grayscale(1);
+    pointer-events: none;
   }
-  .frei-fehlt .todo {
-    border: 0;
+  :root[data-theme='dark'] .platte {
+    filter: grayscale(1) brightness(0.55) contrast(1.1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) .platte {
+      filter: grayscale(1) brightness(0.55) contrast(1.1);
+    }
   }
   .hero-text {
     position: absolute;
@@ -176,9 +194,15 @@ const frei = fs.existsSync('public/buehne-frei.png');
       height: 52%;
       max-width: 96vw;
     }
-    .frei-fehlt {
-      width: 60vw;
-      height: 48%;
+    .platte {
+      right: auto;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: auto;
+      top: 4.4rem;
+      width: 72vw;
+      max-height: 50svh;
+      object-position: 62% 12%;
     }
     .hero-text {
       max-width: none;
@@ -187,6 +211,9 @@ const frei = fs.existsSync('public/buehne-frei.png');
     }
     .kernsatz {
       font-size: clamp(1.7rem, 8.4vw, 2.6rem);
+    }
+    .hero-text {
+      bottom: 1.4rem;
     }
   }
 </style>

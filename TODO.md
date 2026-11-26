@@ -5,7 +5,8 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 ## Inhalte, die fehlen
 
 - [ ] Freisteller `public/buehne-frei.png` (transparenter Hintergrund, 1536×1024 wie
-      das Original). Bis dahin steht im Kopf ein gestrichelter Platzhalter.
+      das Original). Bis dahin liegt das Foto als rechteckige Platte im Feld; sobald
+      die Datei da ist, nimmt der Kopf automatisch den Freisteller.
 - [ ] Thema des Vortrags bei KI-Connect 2026.
 - [ ] Die drei Sätze unter „Wovon ich überzeugt bin“ sind Entwurf, bitte freigeben.
 - [ ] OG-Bild zeigt noch Foto und Text der vorigen Fassung; mit Freisteller neu rendern

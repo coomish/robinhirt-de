@@ -299,7 +299,8 @@ export function mountField(canvas: HTMLCanvasElement, ui: UI = {}): Unmount {
           if ((pass === 1) !== strong) continue;
           if (fade < 1 && ((col * 7 + r * 13) % 10) / 10 > fade) continue;
           const x = col * cell + half;
-          const mask = wide ? Math.min(1, Math.max(0.05, (x / W - 0.3) / 0.32)) : 1;
+          // links (Desktop) bzw. unten (Handy) steht der Text: dort bleibt das Feld dünn
+          const mask = wide ? Math.min(1, Math.max(0.05, (x / W - 0.3) / 0.32)) : y / H > 0.6 ? 0.06 : 1;
           if (mask < 1 && ((col * 3 + r * 5) % 10) / 10 > mask) continue;
           const ang = Math.max(-1, Math.min(1, muShow[g])) * 1.22; // ±70°
           const len = half * (0.45 + 0.5 * cert);

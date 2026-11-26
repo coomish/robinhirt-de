@@ -422,3 +422,8 @@ Kontakt. Kurve, Vorhersage und Schwarm sind aus dem Code entfernt (Git-Historie)
 **Überarbeitungsrunde.** Nach Vorlage sah noch das Kästchen „Vorschaubild
 folgt“ bei den Auftritten aus, eine graue Karte mit Platzhaltergrafik. Es ist
 entfernt; der Hinweis auf das Video steht als eine Zeile unter der Liste.
+
+**Ohne Freisteller.** Bis der Freisteller da ist, liegt das Schwarzweißfoto
+als rechteckige Platte rechts unten im Kopf, 4:5 beschnitten, am rechten und
+unteren Rand angeschnitten; das Feld läuft bis an die Kanten. Auf dem Handy
+steht die Platte oben, der Text darunter, das Feld bleibt dort unten dünn.
