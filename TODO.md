@@ -4,6 +4,15 @@ Sichtbare Platzhalter auf der Seite sind in Bernstein gestrichelt markiert.
 
 ## Inhalte, die fehlen
 
+- [ ] Freisteller `public/buehne-frei.png` (transparenter Hintergrund, 1536×1024 wie
+      das Original). Bis dahin steht im Kopf ein gestrichelter Platzhalter.
+- [ ] Thema des Vortrags bei KI-Connect 2026.
+- [ ] Die drei Sätze unter „Wovon ich überzeugt bin“ sind Entwurf, bitte freigeben.
+- [ ] OG-Bild zeigt noch Foto und Text der vorigen Fassung; mit Freisteller neu rendern
+      (Zeichenfeld, Person, Kernsatz).
+- [ ] Vor der Freigabe: `noindex` in `src/layouts/Base.astro` und `Disallow` in
+      `public/robots.txt` wieder entfernen.
+
 - [ ] Domain eintragen: in den GitHub-Pages-Einstellungen (Custom domain) und als
       `site` in `astro.config.mjs`. Bis dahin liegt die Seite unter
       https://coomish.github.io/robinhirt-de/ und bekommt Adresse und Basis-Pfad

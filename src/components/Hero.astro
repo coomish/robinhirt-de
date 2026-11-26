@@ -1,212 +1,206 @@
 ---
+import fs from 'node:fs';
 import { href } from '../lib/base';
+// Der Freisteller kommt vom Auftraggeber; fehlt er, bleibt die Ebene leer.
+const frei = fs.existsSync('public/buehne-frei.png');
 ---
 
 <section class="hero" aria-labelledby="name">
-  <div class="buehne">
-    <img
-      class="buehne-foto"
-      src={href('/buehne-1200.jpg')}
-      srcset={`${href('/buehne-1200.jpg')} 1200w, ${href('/buehne-1536.jpg')} 1536w`}
-      sizes="100vw"
-      width="1536"
-      height="1024"
-      alt="Robin Hirt sitzt auf einem Hocker und blickt in die Kamera, Schwarzweißfoto"
-      fetchpriority="high"
-      decoding="async"
-    />
-    <div class="buehne-text">
-      <h1 id="name">Dr.-Ing. Robin Hirt</h1>
-      <p class="mono rolle">Gründer von prenode · Karlsruhe</p>
-      <p class="kernsatz">
-        Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb
-        funktionieren muss.
-      </p>
-    </div>
-  </div>
-
-  <div class="signal">
-    <canvas
-      data-signal
-      tabindex="0"
-      role="img"
-      aria-label="Ein Modell lernt live eine verborgene Kurve aus verrauschten Punkten und zeigt seine Unsicherheit als Band"
-      aria-describedby="signal-hilfe"
-    ></canvas>
-    <p id="signal-hilfe" class="visually-hidden">
-      Klick oder Finger setzt eigene Punkte, Ziehen setzt mehrere. Tastatur: Leertaste fügt
-      einen Messpunkt hinzu, Pfeil nach oben oder unten einen Ausreißer.
+  <canvas
+    class="feld"
+    data-feld-canvas
+    tabindex="0"
+    role="img"
+    aria-label="Ein Feld aus kleinen Zeichen: wo ein lernendes Modell Daten hat, stehen kräftige Striche, wo nicht, feine Punkte"
+    aria-describedby="feld-hilfe"
+  ></canvas>
+  <p id="feld-hilfe" class="visually-hidden">Tipp auf die Fläche oder Leertaste setzt Messpunkte.</p>
+  {
+    frei ? (
+      <img
+        class="frei"
+        src={href('/buehne-frei.png')}
+        width="1536"
+        height="1024"
+        alt="Robin Hirt, sitzend, freigestellt"
+        fetchpriority="high"
+        decoding="async"
+      />
+    ) : (
+      <div class="frei frei-fehlt" aria-hidden="true"><span class="todo">Freisteller folgt</span></div>
+    )
+  }
+  <div class="hero-text">
+    <h1 id="name">Dr.-Ing. Robin Hirt</h1>
+    <p class="rolle">Gründer von prenode, Karlsruhe</p>
+    <p class="kernsatz">
+      Unternehmer. Seit über zehn Jahren arbeite ich an künstlicher Intelligenz, die im Betrieb
+      funktionieren muss.
     </p>
-  </div>
-
-  <div class="row readout">
-    <div class="axis">
-      <p class="mono">Motiv <span data-motiv-nr>–</span>/3</p>
-      <p class="mono"><a href={href('/?motiv=vorhersage')} data-motiv-next>nächstes</a></p>
-    </div>
-    <div class="content">
-      <p class="mono werte" data-ro="werte">
-        <span>Punkte <b>–</b></span>
-        <span>Ausreißer <b>–</b></span>
-        <span>Unsicherheit <b>–</b></span>
-        <span>Rechenzeit <b>–</b></span>
-      </p>
-      <p class="hinweis" data-ro="hinweis">
-        Ein Gauß-Prozess lernt live eine verborgene Kurve; das Band ist seine Unsicherheit,
-        Türkis, was nicht passt. Klick setzt Punkte. Synthetisch, gerechnet lokal im
-        Browser.
-      </p>
-    </div>
   </div>
 </section>
 
+<div class="row erklaerung">
+  <div class="axis"></div>
+  <div class="content">
+    <p class="satz" data-ro="hinweis">
+      Ein Modell für den Betrieb muss wissen, wo es sich nicht sicher ist. Hier füllt sich das
+      Feld, wo es Daten hat. Tipp auf die Fläche und gib ihm welche.
+    </p>
+    <details class="wie">
+      <summary>Wie das funktioniert</summary>
+      <p>
+        Das Feld ist ein zweidimensionaler Gauß-Prozess mit RBF-Kern. Aus einer verborgenen
+        Landschaft fallen verrauschte Messpunkte, gelegentlich ein Ausreißer; nach etwa 30 Sekunden
+        verblassen sie. Für jede Rasterzelle sagt das Modell Wert und Unsicherheit voraus: Wo die
+        Unsicherheit klein ist, steht ein Strich, dessen Neigung den Wert zeigt (−1 bis 1 entspricht
+        −70° bis 70°) und dessen Stärke die Sicherheit. Wo das Modell nichts weiß, steht ein Punkt.
+        Ausreißer erkennt es per Leave-one-out: ein Punkt, der ohne sich selbst nicht vorhersagbar
+        wäre, wird als Kreuz markiert und beim Fit ausgelassen. Alles rechnet lokal im Browser,
+        nichts wird gesendet.
+      </p>
+      <p class="code werte" data-ro="werte"></p>
+    </details>
+  </div>
+</div>
+
 <style>
-  /* Die Bühne: Foto über die volle Breite, der Kernsatz im freien Raum links */
-  /* Der erste Bildschirm teilt sich: oben die Bühne, unten das Motiv */
-  .buehne {
+  .hero {
     position: relative;
-    height: clamp(380px, 56svh, 640px);
+    height: 100svh;
+    min-height: 560px;
     overflow: hidden;
     background: var(--papier);
   }
-  .buehne-foto {
+  .feld {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 112%; /* etwas breiter, damit die Person weiter rechts sitzt */
-    height: 100%;
-    object-fit: cover;
-    object-position: 50% 15%; /* Kopf bleibt auch bei breiten, flachen Fenstern im Bild */
-    filter: grayscale(1);
-  }
-  :root[data-theme='dark'] .buehne-foto {
-    filter: grayscale(1) brightness(0.42) contrast(1.15);
-  }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme='light']) .buehne-foto {
-      filter: grayscale(1) brightness(0.42) contrast(1.15);
-    }
-  }
-  .buehne-text {
-    position: absolute;
-    left: var(--rand);
-    bottom: clamp(1.5rem, 5vh, 3.5rem);
-    max-width: min(38vw, 32rem);
-  }
-  h1 {
-    font-size: var(--s2);
-    font-weight: 600;
-    letter-spacing: -0.005em;
-  }
-  .rolle {
-    margin-top: 0.3rem;
-    color: var(--graphit);
-    opacity: 0.8;
-  }
-  .kernsatz {
-    margin-top: 1.4rem;
-    font-size: clamp(1.5rem, 0.6rem + 1.4vw + 1.2vh, 2.8rem);
-    line-height: 1.1;
-    letter-spacing: -0.018em;
-    font-weight: 500;
-    text-wrap: balance;
-  }
-  @media (max-width: 760px) {
-    .buehne {
-      height: auto;
-    }
-    .buehne-foto {
-      position: static;
-      width: 100%;
-      height: clamp(280px, 48svh, 460px);
-      object-position: 60% 30%;
-    }
-    .buehne-text {
-      position: static;
-      max-width: none;
-      padding: 1.4rem var(--rand) 2rem;
-    }
-    canvas {
-      height: clamp(260px, 44svh, 420px);
-    }
-  }
-  .signal {
-    border-top: var(--hairline) solid var(--raster);
-    border-bottom: var(--hairline) solid var(--raster);
-  }
-  canvas {
+    inset: 0;
     width: 100%;
-    height: clamp(260px, calc(100svh - 4.2rem - clamp(380px, 56svh, 640px)), 520px);
-    touch-action: pan-y;
+    height: 100%;
     cursor: crosshair;
   }
-  canvas:focus-visible {
+  .feld:focus-visible {
     outline-offset: -3px;
   }
-  .readout {
-    padding-top: 0.9rem;
-    padding-bottom: clamp(2rem, 6vh, 4rem);
+  .frei {
+    position: absolute;
+    right: 4vw;
+    bottom: 0;
+    height: 88%;
+    width: auto;
+    max-width: 62vw;
+    object-fit: contain;
+    object-position: bottom;
+    pointer-events: none;
+  }
+  .frei-fehlt {
+    height: 70%;
+    width: min(34vw, 30rem);
+    border: 1px dashed var(--signal);
+    display: grid;
+    place-items: end start;
+    padding: 1rem;
+    font-size: var(--s-1);
+    background: rgb(from var(--papier) r g b / 0.5);
+  }
+  .frei-fehlt .todo {
+    border: 0;
+  }
+  .hero-text {
+    position: absolute;
+    left: var(--rand);
+    bottom: clamp(2rem, 6vh, 4.5rem);
+    max-width: min(54vw, 60rem);
+    z-index: 2;
+  }
+  h1 {
+    font-size: clamp(1.1rem, 0.9rem + 0.6vw, 1.5rem);
+    font-weight: 600;
+  }
+  .rolle {
+    margin-top: 0.2rem;
+    color: var(--blei);
+    font-size: var(--s1);
+  }
+  .kernsatz {
+    margin-top: clamp(0.8rem, 2vh, 1.6rem);
+    font-family: var(--display);
+    font-size: clamp(2rem, 5.2vw, 6rem);
+    line-height: 1;
+    letter-spacing: -0.025em;
+    font-weight: 600;
+    text-wrap: balance;
+  }
+  h1 {
+    font-family: var(--display);
+  }
+  .erklaerung {
+    padding-block: clamp(1.6rem, 4vh, 2.8rem);
+    border-top: var(--hairline) solid var(--raster);
+  }
+  .satz {
+    font-size: var(--s2);
+    line-height: 1.4;
+    max-width: 36ch;
+  }
+  .wie {
+    margin-top: 1rem;
+    max-width: 60ch;
+  }
+  .wie summary {
+    cursor: pointer;
+    color: var(--blei);
+    font-size: var(--s0);
+  }
+  .wie p {
+    margin-top: 0.8rem;
+    font-size: var(--s0);
+    color: var(--blei);
   }
   .werte {
     display: flex;
     flex-wrap: wrap;
     gap: 0.2rem 1.4rem;
   }
-  .werte b {
+  .werte :global(b) {
     font-weight: 500;
     color: var(--graphit);
-    display: inline-block;
-    min-width: 3ch;
   }
-  .hinweis {
-    margin-top: 0.9rem;
-    color: var(--blei);
-    font-size: var(--s0);
-    max-width: 60ch;
+  @media (max-width: 760px) {
+    .frei {
+      right: auto;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: auto;
+      top: 4rem;
+      height: 52%;
+      max-width: 96vw;
+    }
+    .frei-fehlt {
+      width: 60vw;
+      height: 48%;
+    }
+    .hero-text {
+      max-width: none;
+      right: var(--rand);
+      bottom: 1.6rem;
+    }
+    .kernsatz {
+      font-size: clamp(1.7rem, 8.4vw, 2.6rem);
+    }
   }
-  .axis p + p {
-    margin-top: 0.3rem;
-  }
-  @media (max-width: 900px) {
-  </style>
+</style>
 
 <script>
-  import type { UI, Unmount } from '../scripts/ui';
-  const canvas = document.querySelector<HTMLCanvasElement>('[data-signal]');
-  const ui: UI = {
-    werte: document.querySelector<HTMLElement>('[data-ro="werte"]'),
-    hinweis: document.querySelector<HTMLElement>('[data-ro="hinweis"]'),
-  };
-  const nr = document.querySelector<HTMLElement>('[data-motiv-nr]');
-  const next = document.querySelector<HTMLAnchorElement>('[data-motiv-next]');
-  const MOTIVE = ['modell', 'vorhersage', 'schwarm'] as const;
-  type Motiv = (typeof MOTIVE)[number];
-  const loaders: Record<Motiv, () => Promise<(c: HTMLCanvasElement, u: UI) => Unmount>> = {
-    modell: () => import('../scripts/model').then((m) => m.mountModel),
-    vorhersage: () => import('../scripts/forecast').then((m) => m.mountForecast),
-    schwarm: () => import('../scripts/swarm').then((m) => m.mountSwarm),
-  };
+  import { mountField } from '../scripts/field';
+  const q = new URLSearchParams(location.search);
+  const feld = q.get('feld');
+  if (feld === 'blau' || feld === 'petrol') document.documentElement.dataset.feld = feld;
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-feld-canvas]');
   if (canvas) {
-    // Jeder Besuch bekommt ein zufälliges Motiv; ?motiv= legt es fest, „nächstes“ wechselt
-    const wanted = new URLSearchParams(location.search).get('motiv') as Motiv | null;
-    let current: number = wanted && MOTIVE.includes(wanted) ? MOTIVE.indexOf(wanted) : Math.floor(Math.random() * MOTIVE.length);
-    let unmount: Unmount | null = null;
-    let busy = false;
-    async function show(i: number) {
-      if (busy) return;
-      busy = true;
-      current = (i + MOTIVE.length) % MOTIVE.length;
-      const mount = await loaders[MOTIVE[current]]();
-      unmount?.();
-      unmount = mount(canvas!, ui);
-      if (nr) nr.textContent = String(current + 1);
-      if (next) next.href = `${import.meta.env.BASE_URL.replace(/\/$/, '')}/?motiv=${MOTIVE[(current + 1) % MOTIVE.length]}`;
-      busy = false;
-    }
-    show(current);
-    next?.addEventListener('click', (ev) => {
-      ev.preventDefault();
-      show(current + 1);
+    mountField(canvas, {
+      werte: document.querySelector<HTMLElement>('[data-ro="werte"]'),
+      hinweis: null,
     });
   }
 </script>
