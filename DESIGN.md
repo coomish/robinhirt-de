@@ -423,7 +423,12 @@ Kontakt. Kurve, Vorhersage und Schwarm sind aus dem Code entfernt (Git-Historie)
 folgt“ bei den Auftritten aus, eine graue Karte mit Platzhaltergrafik. Es ist
 entfernt; der Hinweis auf das Video steht als eine Zeile unter der Liste.
 
-**Ohne Freisteller.** Bis der Freisteller da ist, liegt das Schwarzweißfoto
-als rechteckige Platte rechts unten im Kopf, 4:5 beschnitten, am rechten und
-unteren Rand angeschnitten; das Feld läuft bis an die Kanten. Auf dem Handy
-steht die Platte oben, der Text darunter, das Feld bleibt dort unten dünn.
+**Ohne Freisteller.** Das Schwarzweißfoto liegt per Tonwert und
+Multiplizieren im Papier: Helligkeit und Kontrast heben den grauen
+Studiohintergrund fast auf Weiß, das Multiplizieren lässt ihn im Grund
+verschwinden, das Feld scheint durch, nur die Person bleibt stehen. Keine
+Unschärfe, kein Glühen, kein erzeugtes Bild; nur Tonwerte. Im dunklen Schema
+trägt das nicht, dort bleibt die Platte als abgedunkeltes Rechteck, an zwei
+Rändern angeschnitten. Auf dem Handy liegt sie oben, der Text darunter, das
+Feld bleibt dort unten dünn. Sobald `public/buehne-frei.png` vorliegt, nimmt
+der Kopf den Freisteller.
